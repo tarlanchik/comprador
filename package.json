@@ -1,0 +1,15 @@
+{
+    "name": "adminlte-project",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "webpack --mode development",
+        "build": "webpack --mode production"
+    },
+    "dependencies": {
+        "admin-lte": "^3.2.0",
+        "bootstrap": "4.6",
+        "jquery": "^3.7.1",
+        "popper.js": "^1.16.1"
+    }
+}
