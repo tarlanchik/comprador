@@ -11,12 +11,14 @@ use Livewire\Component;
 
 class ProductCreate extends Component
 {
+
     public $name, $price, $stock, $description, $category_id, $product_type_id;
     public $parameters = [];
 
 
     public function mount()
     {
+        dd('ProductCreate is called');
         logger('Product Компонент вызван');
     }
     public function updatedProductTypeId($value)

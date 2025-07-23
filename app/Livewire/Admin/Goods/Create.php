@@ -12,7 +12,7 @@ use Livewire\WithFileUploads;
 class Create extends Component
 {
     use WithFileUploads;
-
+    public bool $isEdit = false;
     public string $name_ru;
     public string $name_en;
     public string $name_az;
@@ -170,7 +170,7 @@ class Create extends Component
 
     public function render()
     {
-        return view('livewire.admin.goods-manager', [
+        return view('livewire.admin.goods.edit-create', [
             'categories' => Category::getOrderedCategories(),
             'productTypes' => ProductType::all(),
         ])->layout('admin.layouts.admin');
