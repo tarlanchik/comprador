@@ -34,7 +34,7 @@
                                 <!-- <td>{{ $good->created_at->format('d.m.Y') }}</td> -->
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('admin.goods-edit', $good->id) }}" class="btn btn-sm btn-outline-primary">
+                                        <a href="{{ route('admin.goods.edit', $good->id) }}" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-pencil-square"></i> Редактировать
                                         </a>
                                         <form action="{{ route('admin.goods-index', $good->id) }}" method="POST" onsubmit="return confirm('Вы уверены, что хотите удалить этот товар?');">

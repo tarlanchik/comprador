@@ -27,12 +27,12 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         return view('livewire.admin.pages.goods.index');
     })->name('goods-index');
     Route::get('/goods-create-page', function() {
-        return view('livewire.admin.pages.goods.edit-create');
+        return view('livewire.admin.pages.goods.create');
     })->name('goods-create');
 
     Route::get('/goods-edit-page', function() {
-        return view('livewire.admin.pages.goods.edit-create');
-    })->name('goods-edit');
+        return view('livewire.admin.pages.goods.edit');
+    })->name('goods-edit-page');
 
 
 

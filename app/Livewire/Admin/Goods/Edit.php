@@ -12,10 +12,10 @@ use Livewire\WithFileUploads;
 class Edit extends Component
 {
     use WithFileUploads;
-
+    public bool $isEdit = false;
     public Good $good;
 
-    public ?string $name_ru;
+    public ?string $name_ru = '';
     public ?string $name_en;
     public ?string $name_az;
     public ?string $title_ru;
@@ -41,9 +41,14 @@ class Edit extends Component
     public array $parameters = [];
     public array $categories = [];
 
-    public function mount(Good $good)
+     public function mount(Good $good)
     {
-        $this->good = $good;
+        $this->good = $good->load('category.productType');
+        $this->good = $good->load('images', 'category.productType.parameters');
+
+        $this->isEdit = true;
+
+        //$this->good = $good;
 
         $this->name_ru = $good->name_ru;
         $this->name_en = $good->name_en;
@@ -62,17 +67,48 @@ class Edit extends Component
         $this->count = $good->count;
         $this->youtube_link = $good->youtube_link;
         $this->category_id = $good->category_id;
-        //$this->productTypeId = optional($good->category->productType)->id;
+        #$this->productTypeId = $this->good->category?->productType?->id;
         $this->productTypeId = $good->category && $good->category->productType
             ? $good->category->productType->id
             : null;
 
-        $this->parameters = $good->parameterValues()
-            ->pluck('value', 'parameter_id')
-            ->toArray();
-
+        $this->parameters = $good->parameterValues()->pluck('value', 'parameter_id')->toArray();
+        //$this->photoOrder = $good->images->pluck('id')->toArray();
+        $this->photoOrder = $this->good->images->pluck('id')->toArray();
         $this->categories = Category::getOrderedCategories();
     }
+
+    public function updatedPhotos()
+    {
+        if (count($this->photos) > 10) {
+            $this->photos = array_slice($this->photos, 0, 10);
+        }
+        $this->photoOrder = array_keys($this->photos);
+    }
+
+    public function updatePhotoOrder($orderedKeys): void
+    {
+        $this->photoOrder = $orderedKeys;
+        $this->photos = collect($orderedKeys)->map(fn ($key) => $this->photos[$key])->toArray();
+    }
+
+    public function removePhoto($index): void
+    {
+        unset($this->photos[$index]);
+        $this->photos = array_values($this->photos);
+        $this->photoOrder = array_keys($this->photos);
+    }
+
+    public function loadParameters()
+    {
+        if ($this->productTypeId) {
+            $this->parameters = Parameter::where('product_type_id', $this->productTypeId)
+                ->pluck('name', 'id')
+                ->mapWithKeys(fn ($_, $id) => [$id => ''])
+                ->toArray();
+        }
+    }
+
 
     public function save()
     {
@@ -131,11 +167,21 @@ class Edit extends Component
         session()->flash('success', 'Товар обновлён!');
     }
 
+
+
     public function render()
     {
-        return view('livewire.admin.goods-manager', [
+
+        $existingPhotos = $this->photoOrder && count($this->photoOrder)
+            ? $this->good->images()->orderByRaw("FIELD(id, " . implode(',', $this->photoOrder) . ")")->get()
+            : $this->good->images()->orderBy('id')->get();
+
+        dd($existingPhotos);
+
+        return view('livewire.admin.goods.edit-create', [
             'categories' => $this->categories,
             'productTypes' => ProductType::all(),
+            'existingPhotos' => $existingPhotos,
         ])->layout('admin.layouts.admin');
     }
 }

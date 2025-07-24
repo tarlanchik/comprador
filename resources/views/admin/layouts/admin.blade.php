@@ -67,6 +67,7 @@
     <div class="content-wrapper">
         <section class="content pt-3">
             <div class="container-fluid">
+                {{ $slot ?? '' }}
                 @yield('content')
             </div>
         </section>

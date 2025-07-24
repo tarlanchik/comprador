@@ -165,7 +165,22 @@
 
                     @error('photos.*') <span class="text-danger">{{ $message }}</span> @enderror
 
+                    {{-- for editing start--}}
                     <ul class="list-group mt-3" x-ref="photoList">
+                        @if(isset($existingPhotos))
+                            <h5 class="mt-4">Загруженные фотографии</h5>
+                            <ul class="list-group mt-3">
+                                @foreach($existingPhotos as $photo)
+                                    <li class="list-group-item d-flex align-items-center gap-3">
+                                        <img src="{{ asset('storage/' . $photo->path) }}" width="100" class="rounded shadow">
+                                        <span class="flex-grow-1">Фото #{{ $loop->iteration }}</span>
+                                        <button wire:click="removePhoto({{ $index }})" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                            {{-- for editing and--}}
+
                         @foreach($photos as $index => $photo)
                             <li class="list-group-item d-flex align-items-center gap-3" data-key="{{ $index }}">
                                 <span class="handle" style="cursor: move;">⬍</span>
@@ -177,7 +192,6 @@
                     </ul>
                 </div>
             </div>
-
             <div class="card-footer">
                 <button type="submit" class="btn btn-success">{{ $isEdit ? 'Сохранить изменения' : 'Добавить' }}</button>
             </div>
