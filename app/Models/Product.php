@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     protected $fillable = ['name'];
+
     public function parameterValues()
     {
         return $this->hasMany(ProductParameterValue::class);

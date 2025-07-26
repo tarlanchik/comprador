@@ -11,6 +11,8 @@
         <div class="card-body">
             <div class="card">
                 <div class="card-body table-responsive">
+
+                    @if (!empty($goods) && count($goods) > 0)
                     <table class="table table-striped table-hover align-middle text-center">
                         <thead class="table-secondary">
                         <tr>
@@ -19,7 +21,7 @@
                             <th scope="col">Категория</th>
                             <th scope="col">Цена</th>
                             <th scope="col">Кол-во</th>
-                            <!-- <th scope="col">Создан</th> -->
+                            <!-- <th scope="cosl">Создан</th> -->
                             <th scope="col">Действия</th>
                         </tr>
                         </thead>
@@ -37,19 +39,22 @@
                                         <a href="{{ route('admin.goods.edit', $good->id) }}" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-pencil-square"></i> Редактировать
                                         </a>
-                                        <form action="{{ route('admin.goods-index', $good->id) }}" method="POST" onsubmit="return confirm('Вы уверены, что хотите удалить этот товар?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                <i class="bi bi-trash"></i> Удалить
-                                            </button>
-                                        </form>
+                                        <button wire:click="delete({{ $good->id }})"
+                                                class="btn btn-sm btn-danger"
+                                                onclick="return confirm('Вы уверены, что хотите удалить этот товар?')">
+                                            Удалить
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
                         @endforeach
                         </tbody>
                     </table>
+                    @else
+                        <div class="alert alert-warning text-center mx-auto" role="alert">
+                            <strong>Обратите внимание!</strong>  <br>Пока нет доступных товаров для отображения.
+                        </div>
+                    @endif
 
                 </div>
                 <div class="card-footer">

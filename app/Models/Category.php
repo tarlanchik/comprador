@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,7 @@ class Category extends Model
     public static function getOrderedCategories()
     {
         $all = self::all();
+
         return self::buildTree($all);
     }
 

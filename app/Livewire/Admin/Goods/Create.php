@@ -6,33 +6,55 @@ use App\Models\Category;
 use App\Models\Good;
 use App\Models\Parameter;
 use App\Models\ProductType;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
 
 class Create extends Component
 {
     use WithFileUploads;
+
     public bool $isEdit = false;
+
     public string $name_ru;
+
     public string $name_en;
+
     public string $name_az;
+
     public string $title_ru;
+
     public string $title_en;
+
     public string $title_az;
+
     public string $keywords_ru;
+
     public string $keywords_en;
+
     public string $keywords_az;
+
     public string $description_ru;
+
     public string $description_en;
+
     public string $description_az;
-    public float|null $price = null;
-    public float|null $old_price = null;
-    public int|null $count = null;
-    public int|null $category_id = null;
+
+    public ?float $price = null;
+
+    public ?float $old_price = null;
+
+    public ?int $count = null;
+
+    public ?int $category_id = null;
+
     public ?int $productTypeId = null;
-    public string|null $youtube_link = null;
+
+    public ?string $youtube_link = null;
 
     public array $photos = [];
+
     public array $photoOrder = [];
 
     public array $parameters = [];
@@ -42,11 +64,11 @@ class Create extends Component
         'photos.*' => 'image|max:10240', // каждый файл ≤ 10MB
     ];
 
-
     public array $categories = [];
 
     public function mount()
     {
+        $this->isEdit = false;
         $this->categories = Category::getOrderedCategories();
     }
 
@@ -72,7 +94,7 @@ class Create extends Component
 
     public function loadParameters(): void
     {
-        if (!$this->productTypeId) {
+        if (! $this->productTypeId) {
             session()->flash('parameter_error', 'Пожалуйста, выберите шаблон товара.');
             return;
         }
@@ -80,15 +102,14 @@ class Create extends Component
         if ($this->productTypeId) {
             $this->parameters = Parameter::where('product_type_id', $this->productTypeId)
                 ->pluck('name', 'id')
-                ->mapWithKeys(fn($name, $id) => [$id => ''])
+                ->mapWithKeys(fn ($name, $id) => [$id => ''])
                 ->toArray();
 
-            logger('Параметры загружены вручную для шаблона ID: ' . $this->productTypeId);
+            logger('Параметры загружены вручную для шаблона ID: '.$this->productTypeId);
         } else {
             $this->parameters = [];
         }
     }
-
 
     public function updatePhotoOrder($orderedKeys): void
     {
@@ -103,7 +124,7 @@ class Create extends Component
         $this->photoOrder = array_keys($this->photos);
     }
 
-    public function save(): void
+    public function save()
     {
         $this->validate([
             'name_ru' => 'required|string|max:255',
@@ -155,17 +176,47 @@ class Create extends Component
             ]);
         }
 
-        // Сохраняем фото
-        foreach ($this->photos as $photo) {
-            $path = $photo->store('goods', 'public');
-            $good->images()->create(['path' => $path]);
+        $disk = Storage::disk('public');
+        $dir = 'goods/' . $good->id;
+
+// Создаём папку (не обязательно, но если хочешь контролировать chmod)
+        if (!$disk->exists($dir)) {
+            if (!$disk->makeDirectory($dir)) {
+                throw new \Exception('Ошибка: не удалось создать директорию для хранения фото.');
+            }
+            chmod($disk->path($dir), 0755);
         }
 
+// Сохраняем фото
+        foreach ($this->photos as $photo) {
+            $imageName = uniqid() . '.' . $photo->getClientOriginalExtension();
+
+            // Сохраняем на диск public (Laravel сам создаёт поддиректории)
+            $storedPath = $photo->storeAs($dir, $imageName, 'public');
+
+            if ($storedPath) {
+                $good->images()->create([
+                    'image_path' => "storage/{$storedPath}", // для отображения в браузере
+                ]);
+
+                // chmod для файла
+                chmod($disk->path($storedPath), 0644);
+            } else {
+                logger()->error('Ошибка при сохранении фото', [
+                    'image' => $photo->getClientOriginalName(),
+                ]);
+            }
+        }
+
+
         session()->flash('success', 'Товар добавлен!');
-        $this->reset();
-        //После reset() желательно оставить photos пустым вручную, иначе могут быть проблемы с повторной загрузкой:
-        $this->photos = [];
-        $this->photoOrder = [];
+        return redirect()->route('admin.goods.index'); //A void function must not return a value
+/*
+        //$this->reset();
+        // После reset() желательно оставить photos пустым вручную, иначе могут быть проблемы с повторной загрузкой:
+        //$this->photos = [];
+        //$this->photoOrder = [];
+        */
     }
 
     public function render()

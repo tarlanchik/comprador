@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Parameter;
 use App\Models\ProductType;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ParameterSeeder extends Seeder
@@ -12,8 +11,8 @@ class ParameterSeeder extends Seeder
     public function run(): void
     {
         $processor = ProductType::where('name', 'Процессор')->first();
-        $laptop    = ProductType::where('name', 'Ноутбук')->first();
-        $monitor   = ProductType::where('name', 'Монитор')->first();
+        $laptop = ProductType::where('name', 'Ноутбук')->first();
+        $monitor = ProductType::where('name', 'Монитор')->first();
 
         Parameter::insert([
             // Процессор

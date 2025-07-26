@@ -3,24 +3,32 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Category;
-use App\Models\ProductType;
 use App\Models\Parameter;
+use App\Models\ProductType;
 use Livewire\Component;
 
 class ProductTypeManager extends Component
 {
     public bool $showModal = false;
+
     public object $types;
+
     public string $name;
-    public string|null $selectedTypeName = null;
-    public string|null $selectedTypeId = null;
+
+    public ?string $selectedTypeName = null;
+
+    public ?string $selectedTypeId = null;
+
     public string $parameterName;
+
     public array $parameterList = [];
 
-    public string|null $editingParameterId = null;
+    public ?string $editingParameterId = null;
+
     public string $editingParameterName = '';
 
-    public string|null $editTypeId = null;
+    public ?string $editTypeId = null;
+
     public string $editTypeName = '';
 
     public function editCategory($id)
@@ -45,6 +53,7 @@ class ProductTypeManager extends Component
         // Проверка, чтобы категория не была своим же родителем
         if ($this->editParentId == $this->editId) {
             session()->flash('error', 'Категория не может быть родителем самой себя');
+
             return;
         }
 
@@ -62,7 +71,6 @@ class ProductTypeManager extends Component
 
         session()->flash('success', 'Категория обновлена');
     }
-
 
     public function startEditingParameter($id)
     {
@@ -125,6 +133,7 @@ class ProductTypeManager extends Component
             $this->parameterList = [];
         }
     }
+
     public function editType($id)
     {
         $type = ProductType::findOrFail($id);
@@ -151,6 +160,7 @@ class ProductTypeManager extends Component
 
         $this->dispatch('close-edit-type-modal');
     }
+
     public function manageParameters($typeId)
     {
         /*
@@ -179,11 +189,12 @@ class ProductTypeManager extends Component
 
     public function addParameter()
     {
-        logger('Добавление параметра: ' . $this->parameterName . ' для типа: ' . $this->selectedTypeId);
+        logger('Добавление параметра: '.$this->parameterName.' для типа: '.$this->selectedTypeId);
         $this->validate(['parameterName' => 'required']);
-        if (!$this->selectedTypeId) {
-            //session()->flash('error', 'Тип товара не выбран!');
+        if (! $this->selectedTypeId) {
+            // session()->flash('error', 'Тип товара не выбран!');
             $this->dispatch('error', message: 'Тип товара не выбран!');
+
             return;
         }
 

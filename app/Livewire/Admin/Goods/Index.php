@@ -12,9 +12,25 @@ class Index extends Component
 
     public function delete($id): void
     {
-        Good::findOrFail($id)->delete();
-        session()->flash('success', 'Удалено');
+        $good = Good::findOrFail($id);
+
+        // Удаляем связанные изображения
+        foreach ($good->images as $image) {
+            if (\Illuminate\Support\Facades\Storage::exists(str_replace('storage/', 'public/', $image->path))) {
+                \Illuminate\Support\Facades\Storage::delete(str_replace('storage/', 'public/', $image->path));
+            }
+            $image->delete();
+        }
+        // Удаляем параметры
+        $good->parameterValues()->delete();
+
+        // Удаляем сам товар
+        $good->delete();
+
+        session()->flash('success', 'Товар успешно удалён!');
     }
+
+
 
     public function render()
     {

@@ -2,25 +2,34 @@
 
 namespace App\Livewire\Admin;
 
-
-use App\Models\Product;
-use App\Models\ProductType;
 use App\Models\Parameter;
+use App\Models\Product;
 use App\Models\ProductParameterValue;
+use App\Models\ProductType;
 use Livewire\Component;
 
 class ProductCreate extends Component
 {
+    public $name;
 
-    public $name, $price, $stock, $description, $category_id, $product_type_id;
+    public $price;
+
+    public $stock;
+
+    public $description;
+
+    public $category_id;
+
+    public $product_type_id;
+
     public $parameters = [];
-
 
     public function mount()
     {
         dd('ProductCreate is called');
         logger('Product Компонент вызван');
     }
+
     public function updatedProductTypeId($value)
     {
         logger('ProductCreate Компонент вызван');
@@ -37,7 +46,7 @@ class ProductCreate extends Component
             'price' => 'required|numeric',
             'stock' => 'required|integer',
             'product_type_id' => 'required|exists:product_types,id',
-            'parameters.*.value' => 'required'
+            'parameters.*.value' => 'required',
         ]);
 
         $product = Product::create([
@@ -58,6 +67,7 @@ class ProductCreate extends Component
         }
 
         session()->flash('success', 'Товар успешно создан!');
+
         return redirect()->route('admin.products.index');
     }
 

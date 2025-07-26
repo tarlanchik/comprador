@@ -2,19 +2,24 @@
 
 namespace App\Livewire\Admin;
 
-use Livewire\Component;
 use App\Models\Category;
+use Livewire\Component;
 
 class CategoryManager extends Component
 {
     public $name_ru;
+
     public $name_en;
+
     public $name_az;
 
-// Для редактирования
+    // Для редактирования
     public $editNameRu;
+
     public $editNameEn;
+
     public $editNameAz;
+
     public $parent_id;
 
     public $editId;
@@ -89,6 +94,7 @@ class CategoryManager extends Component
 
         if ($this->editParentId == $this->editId || $this->isDescendant($category, $this->editParentId)) {
             $this->addError('editParentId', 'Нельзя выбрать текущую категорию или её потомка в качестве родителя.');
+
             return;
         }
 
@@ -106,14 +112,20 @@ class CategoryManager extends Component
 
     protected function isDescendant(Category $category, $possibleParentId)
     {
-        if (!$possibleParentId) return false;
+        if (! $possibleParentId) {
+            return false;
+        }
         $children = $category->children()->pluck('id')->toArray();
 
-        if (in_array($possibleParentId, $children)) return true;
+        if (in_array($possibleParentId, $children)) {
+            return true;
+        }
 
         foreach ($children as $childId) {
             $child = Category::find($childId);
-            if ($child && $this->isDescendant($child, $possibleParentId)) return true;
+            if ($child && $this->isDescendant($child, $possibleParentId)) {
+                return true;
+            }
         }
 
         return false;
@@ -134,7 +146,7 @@ class CategoryManager extends Component
 
     public function render()
     {
-        //return view('livewire.admin.category-manager')->layout('layouts.app');
+        // return view('livewire.admin.category-manager')->layout('layouts.app');
         return view('livewire.admin.category-manager')->layout('admin.layouts.admin');
     }
 }

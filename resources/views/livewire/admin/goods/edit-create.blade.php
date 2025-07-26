@@ -172,9 +172,10 @@
                             <ul class="list-group mt-3">
                                 @foreach($existingPhotos as $photo)
                                     <li class="list-group-item d-flex align-items-center gap-3">
-                                        <img src="{{ asset('storage/' . $photo->path) }}" width="100" class="rounded shadow">
+                                        <img alt="" src="{{ asset($photo->image_path) }}" width="100" class="rounded shadow">
                                         <span class="flex-grow-1">Фото #{{ $loop->iteration }}</span>
-                                        <button wire:click="removePhoto({{ $index }})" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                        <button type="button" wire:click="deleteExistingPhoto({{ $photo->id }})" class="btn btn-sm btn-outline-danger">Удалить</button>
+
                                     </li>
                                 @endforeach
                             </ul>
@@ -184,7 +185,7 @@
                         @foreach($photos as $index => $photo)
                             <li class="list-group-item d-flex align-items-center gap-3" data-key="{{ $index }}">
                                 <span class="handle" style="cursor: move;">⬍</span>
-                                <img src="{{ $photo->temporaryUrl() }}" width="100" class="rounded shadow">
+                                <img alt="" src="{{ $photo->temporaryUrl() }}" width="100" class="rounded shadow">
                                 <span class="flex-grow-1">Фото {{ $loop->iteration }}</span>
                                 <button wire:click="removePhoto({{ $index }})" class="btn btn-sm btn-outline-danger">Удалить</button>
                             </li>

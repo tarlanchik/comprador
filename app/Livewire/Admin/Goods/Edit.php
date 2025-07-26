@@ -12,45 +12,65 @@ use Livewire\WithFileUploads;
 class Edit extends Component
 {
     use WithFileUploads;
+
     public bool $isEdit = false;
+
     public Good $good;
 
     public ?string $name_ru = '';
+
     public ?string $name_en;
+
     public ?string $name_az;
+
     public ?string $title_ru;
+
     public ?string $title_en;
+
     public ?string $title_az;
+
     public ?string $keywords_ru;
+
     public ?string $keywords_en;
+
     public ?string $keywords_az;
+
     public ?string $description_ru;
+
     public ?string $description_en;
+
     public ?string $description_az;
-    public float|null $price = null;
-    public float|null $old_price = null;
-    public int|null $count = null;
-    public int|null $category_id = null;
+
+    public ?float $price = null;
+
+    public ?float $old_price = null;
+
+    public ?int $count = null;
+
+    public ?int $category_id = null;
+
     public ?int $productTypeId = null;
-    public string|null $youtube_link = null;
+
+    public ?string $youtube_link = null;
 
     public ?string $productType;
+
     public array $photos = [];
+
     public array $photoOrder = [];
 
     public array $parameters = [];
+
     public array $categories = [];
 
-     public function mount(Good $good)
+    public function mount(Good $good): void
     {
         $this->good = $good->load('category.productType');
         $this->good = $good->load('images', 'category.productType.parameters');
 
         $this->isEdit = true;
 
-        //$this->good = $good;
-
-        $this->name_ru = $good->name_ru;
+        $this->name_ru = $good->name_ru; // Property accessed via magic method
         $this->name_en = $good->name_en;
         $this->name_az = $good->name_az;
         $this->title_ru = $good->title_ru;
@@ -67,23 +87,41 @@ class Edit extends Component
         $this->count = $good->count;
         $this->youtube_link = $good->youtube_link;
         $this->category_id = $good->category_id;
-        #$this->productTypeId = $this->good->category?->productType?->id;
+        // $this->productTypeId = $this->good->category?->productType?->id;
         $this->productTypeId = $good->category && $good->category->productType
             ? $good->category->productType->id
             : null;
 
         $this->parameters = $good->parameterValues()->pluck('value', 'parameter_id')->toArray();
-        //$this->photoOrder = $good->images->pluck('id')->toArray();
+        // $this->photoOrder = $good->images->pluck('id')->toArray();
         $this->photoOrder = $this->good->images->pluck('id')->toArray();
         $this->categories = Category::getOrderedCategories();
     }
 
-    public function updatedPhotos()
+    public function updatedPhotos(): void
     {
         if (count($this->photos) > 10) {
             $this->photos = array_slice($this->photos, 0, 10);
         }
         $this->photoOrder = array_keys($this->photos);
+    }
+
+    public function deleteExistingPhoto($photoId): void
+    {
+        $photo = $this->good->images()->findOrFail($photoId);
+
+        // Удаляем файл с диска
+        $pathOnDisk = 'public/'.str_replace('storage/', '', $photo->path);
+        if (\Illuminate\Support\Facades\Storage::exists($pathOnDisk)) {
+            \Illuminate\Support\Facades\Storage::delete($pathOnDisk);
+        }
+
+        // Удаляем запись из базы
+        $photo->delete();
+        $this->good->refresh();
+
+        // Обновляем порядок и коллекцию
+        $this->photoOrder = $this->good->images()->pluck('id')->toArray();
     }
 
     public function updatePhotoOrder($orderedKeys): void
@@ -99,7 +137,7 @@ class Edit extends Component
         $this->photoOrder = array_keys($this->photos);
     }
 
-    public function loadParameters()
+    public function loadParameters(): void
     {
         if ($this->productTypeId) {
             $this->parameters = Parameter::where('product_type_id', $this->productTypeId)
@@ -108,7 +146,6 @@ class Edit extends Component
                 ->toArray();
         }
     }
-
 
     public function save()
     {
@@ -131,7 +168,7 @@ class Edit extends Component
             'photos.*' => 'image|max:2048',
         ]);
 
-        $this->good->update([
+        $this->good->update([ // Duplicated code fragment (19 lines long)
             'name_ru' => $this->name_ru,
             'name_en' => $this->name_en,
             'name_az' => $this->name_az,
@@ -160,23 +197,26 @@ class Edit extends Component
         }
 
         foreach ($this->photos as $photo) {
-            $path = $photo->store('goods', 'public');
-            $this->good->images()->create(['path' => $path]);
+            $imageName = uniqid().'.'.$photo->getClientOriginalExtension();
+            $relativePath = "goods/{$this->good->id}/{$imageName}";
+            $photo->storeAs("public/goods/{$this->good->id}", $imageName);
+            $this->good->images()->create([
+                'image_path' => "storage/{$relativePath}",
+            ]);
         }
 
         session()->flash('success', 'Товар обновлён!');
+        return redirect()->route('admin.goods.index');
     }
-
-
 
     public function render()
     {
 
         $existingPhotos = $this->photoOrder && count($this->photoOrder)
-            ? $this->good->images()->orderByRaw("FIELD(id, " . implode(',', $this->photoOrder) . ")")->get()
+            ? $this->good->images()->orderByRaw('FIELD(id, '.implode(',', $this->photoOrder).')')->get()
             : $this->good->images()->orderBy('id')->get();
 
-        dd($existingPhotos);
+        // dd($existingPhotos);
 
         return view('livewire.admin.goods.edit-create', [
             'categories' => $this->categories,
@@ -185,4 +225,3 @@ class Edit extends Component
         ])->layout('admin.layouts.admin');
     }
 }
-
