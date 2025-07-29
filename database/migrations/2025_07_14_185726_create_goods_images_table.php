@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('goods_images', function (Blueprint $table) {
             $table->id();
             $table->foreignId('goods_id')->constrained('goods')->onDelete('cascade');
-            $table->string('path'); // путь к изображению
-            $table->integer('order')->default(0); // порядок сортировки
+            $table->string('image_path');
+            $table->integer('sort_order')->default(0);
             $table->timestamps();
         });
     }

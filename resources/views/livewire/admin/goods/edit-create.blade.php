@@ -1,18 +1,31 @@
 <div class="container py-5">
+    <style>
+        #newPhotosList .list-group-item {
+            cursor: move;
+            user-select: none;
+            touch-action: none;
+        }
+        #newPhotosList .list-group-item {
+            position: relative;
+            z-index: 10;
+        }
+        #existingPhotosList .list-group-item {
+            cursor: move;
+            user-select: none;
+            touch-action: none;
+        }
+        #existingPhotosList .list-group-item {
+            position: relative;
+            z-index: 10;
+        }
+    </style>
     <h2>{{ $isEdit ? 'Редактировать товар' : 'Добавить товар' }}</h2>
     @if (session()->has('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
     @if (session()->has('parameter_error'))
-
-        <div
-            x-data
-            x-init="$el.focus()"
-            tabindex="-1"
-            class="alert alert-warning mt-2"
-            role="alert"
-        >
+        <div x-data x-init="$el.focus()" tabindex="-1" class="alert alert-warning mt-2" role="alert">
             {{ session('parameter_error') }}
         </div>
     @endif
@@ -121,7 +134,6 @@
                     @error('productTypeId') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
 
-
                 @if($parameters && count($parameters))
                     @php
                         $params = \App\Models\Parameter::whereIn('id', array_keys($parameters))->get()->keyBy('id');
@@ -140,62 +152,97 @@
                     </div>
                 @endif
 
+                        <div class="mb-3">
+                            <label class="form-label">Фотографии (до 10 шт.)</label>
+                            <input type="file" wire:model="photos" multiple class="form-control">
+                            <small class="form-text text-muted">Вы можете загрузить до 10 изображений.</small>
+                        </div>
 
+                @error('photos')
+                    <div class="text-danger mt-2 text-sm">{{ $message }}</div>
+                @enderror
 
-
-
-                <div x-data="{
-    initSortable() {
-        const el = this.$refs.photoList;
-        new Sortable(el, {
-            animation: 150,
-            handle: '.handle',
-            onEnd: () => {
-                const ordered = Array.from(el.children).map(li => li.getAttribute('data-key'));
-                @this.call('updatePhotoOrder', ordered);
-            }
-        });
-    }
-}" x-init="initSortable">
-                    <div class="mb-3">
-                        <label class="form-label">Фотографии (до 10 шт.)</label>
-                        <input type="file" wire:model="photos" multiple class="form-control">
-                        <small class="form-text text-muted">Вы можете загрузить до 10 изображений.</small>
-                    </div>
-
-                    @error('photos.*') <span class="text-danger">{{ $message }}</span> @enderror
-
-                    {{-- for editing start--}}
-                    <ul class="list-group mt-3" x-ref="photoList">
-                        @if(isset($existingPhotos))
+                        {{-- Существующие фото --}}
+                        @if(isset($existingPhotos) && count($existingPhotos) > 0)
                             <h5 class="mt-4">Загруженные фотографии</h5>
-                            <ul class="list-group mt-3">
-                                @foreach($existingPhotos as $photo)
-                                    <li class="list-group-item d-flex align-items-center gap-3">
-                                        <img alt="" src="{{ asset($photo->image_path) }}" width="100" class="rounded shadow">
-                                        <span class="flex-grow-1">Фото #{{ $loop->iteration }}</span>
-                                        <button type="button" wire:click="deleteExistingPhoto({{ $photo->id }})" class="btn btn-sm btn-outline-danger">Удалить</button>
-
-                                    </li>
-                                @endforeach
-                            </ul>
+                            <div x-data="sortableComponent">
+                                <ul class="list-group mt-3" id="existingPhotosList">
+                                    @foreach($existingPhotos as $photo)
+                                        <li class="handle list-group-item d-flex align-items-center gap-3" data-key="{{ $photo->id }}">
+                                            <span style="font-size: 20px;">⇅</span>
+                                            <img alt="" src="{{ asset($photo->image_path) }}" width="100" class="img-thumbnail">
+                                            <span class="flex-grow-1">Фото #{{ $loop->iteration }}</span>
+                                            <button type="button" wire:click="deleteExistingPhoto({{ $photo->id }})" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
                         @endif
-                            {{-- for editing and--}}
 
-                        @foreach($photos as $index => $photo)
-                            <li class="list-group-item d-flex align-items-center gap-3" data-key="{{ $index }}">
-                                <span class="handle" style="cursor: move;">⬍</span>
-                                <img alt="" src="{{ $photo->temporaryUrl() }}" width="100" class="rounded shadow">
-                                <span class="flex-grow-1">Фото {{ $loop->iteration }}</span>
-                                <button wire:click="removePhoto({{ $index }})" class="btn btn-sm btn-outline-danger">Удалить</button>
-                            </li>
-                        @endforeach
-                    </ul>
+                        {{-- Новые фото --}}
+                        @if(count($photos) > 0)
+                            <h5 class="mt-4">Новые фотографии</h5>
+                            <div x-data="sortableComponent">
+                                <ul class="list-group mt-3" id="newPhotosList">
+                                    @foreach ($photos as $key => $photo)
+                                        <li class="handle list-group-item d-flex align-items-center gap-3" data-key="{{ $key }}">
+                                            <span style="font-size: 20px;">⇅</span>
+                                            <img alt="" src="{{ $photo->temporaryUrl() }}" width="100" class="img-thumbnail">
+                                            <span class="flex-grow-1">Фото {{ $loop->iteration }}</span>
+                                            <button wire:click="removePhoto({{ $key }})" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                    </div>
                 </div>
-            </div>
-            <div class="card-footer">
-                <button type="submit" class="btn btn-success">{{ $isEdit ? 'Сохранить изменения' : 'Добавить' }}</button>
-            </div>
-        </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success">{{ $isEdit ? 'Сохранить изменения' : 'Добавить' }}</button>
+                </div>
+
     </form>
+
 </div>
+
+
+
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+    <script>
+        document.addEventListener("alpine:init", () => {
+            Alpine.data("sortableComponent", () => ({
+                init() {
+                    const el = this.$el.querySelector('#newPhotosList');
+                    if (el && !el._sortable) {
+                        new Sortable(el, {
+                            animation: 150,
+                            handle: '.handle',
+                            onEnd: () => {
+                                const order = Array.from(el.querySelectorAll('li')).map(li => li.dataset.key);
+                                const livewireComponent = Livewire.find(this.$el.closest('[wire\\:id]').getAttribute('wire:id'));
+                                livewireComponent.call('updatePhotoOrder', order);
+                            }
+                        });
+                        el._sortable = true;
+                    }
+
+                    const existingPhotosList = this.$el.querySelector('#existingPhotosList');
+                    if (existingPhotosList && !existingPhotosList._sortable) {
+                        new Sortable(existingPhotosList, {
+                            animation: 150,
+                            handle: '.handle',
+                            onEnd: () => {
+                                const order = Array.from(existingPhotosList.querySelectorAll('li')).map(li => li.dataset.key);
+                                this.$wire.call('updateExistingPhotoOrder', order);
+                            }
+                        });
+                        existingPhotosList._sortable = true;
+                    }
+                }
+            }));
+        });
+    </script>
+@endpush

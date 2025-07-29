@@ -3,19 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
-    protected $fillable = ['name_ru', 'name_en', 'name_az', 'parent_id'];
+    protected $fillable = ['name_ru', 'name_en', 'name_az', 'parent_id','product_type_id'];
 
-    public static function getOrderedCategories()
+    public static function getOrderedCategories(): array
     {
         $all = self::all();
 
         return self::buildTree($all);
     }
 
-    protected static function buildTree($categories, $parentId = null, $level = 0)
+    protected static function buildTree($categories, $parentId = null, $level = 0): array
     {
         $branch = [];
 
@@ -34,17 +36,17 @@ class Category extends Model
         return $branch;
     }
 
-    public function parent()
+    public function parent(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'parent_id');
     }
 
-    public function children()
+    public function children(): HasMany
     {
         return $this->hasMany(Category::class, 'parent_id')->with('children');
     }
 
-    public function productType()
+    public function productType(): BelongsTo
     {
         return $this->belongsTo(ProductType::class);
     }

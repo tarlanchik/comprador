@@ -31,7 +31,7 @@
                                <!--<td>{{ $good->id }}</td>-->
                                 <td class="text-start">{{ $good->name_ru }}</td>
                                 <td>{{ $good->category->name_ru ?? '-' }}</td>
-                                <td>{{ number_format($good->price, 2, '.', ' ') }} ₽</td>
+                                <td>{{ number_format($good->price, 2, '.', ' ') }} ₼</td>
                                 <td>{{ $good->count }}</td>
                                 <!-- <td>{{ $good->created_at->format('d.m.Y') }}</td> -->
                                 <td>
