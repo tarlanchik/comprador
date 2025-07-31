@@ -25,7 +25,7 @@
     @endif
 
     @if (session()->has('parameter_error'))
-        <div x-data x-init="$el.focus()" tabindex="-1" class="alert alert-warning mt-2" role="alert">
+        <div tabindex="-1" class="alert alert-warning mt-2" role="alert">
             {{ session('parameter_error') }}
         </div>
     @endif
@@ -191,7 +191,7 @@
                                             <span class="flex-grow-1">Фото {{ $loop->iteration }}</span>
                                             <button wire:click="removePhoto({{ $key }})" class="btn btn-sm btn-outline-danger">Удалить</button>
                                         </li>
-                                    @endforeach
+                                   @endforeach
                                 </ul>
                             </div>
                         @endif

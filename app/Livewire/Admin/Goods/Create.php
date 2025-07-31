@@ -6,7 +6,6 @@ use App\Models\Category;
 use App\Models\Goods;
 use App\Models\Parameter;
 use App\Models\ProductType;
-use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
@@ -61,14 +60,15 @@ class Create extends Component
     public array $parameters = [];
     public array $orderedKeys = [];
 
+
     protected array $rules = [
-        'photos' => 'nullable|array|max:10', // Чтобы при ошибке валидации не терялись фото
+        'photos' => 'required|array|max:10', // Чтобы при ошибке валидации не терялись фото
         'photos.*' => 'image|max:10240', // каждый файл ≤ 10MB
     ];
 
     public array $categories = [];
 
-    public function mount()
+    public function mount(): void
     {
         $this->isEdit = false;
         $this->categories = Category::getOrderedCategories();
@@ -85,15 +85,12 @@ class Create extends Component
         }
     }
 
-    public function updatedPhotos()
+    public function updatedPhotos(): void
     {
-        Log::alert('updatedPhotos called');
         if (count($this->photos) > 10) {
             $this->photos = array_slice($this->photos, 0, 10);
         }
         $this->photoOrder = array_keys($this->photos);
-
-        // Отправляем событие на frontend
         $this->dispatch('photosUpdated');
     }
 
@@ -103,31 +100,19 @@ class Create extends Component
             session()->flash('parameter_error', 'Пожалуйста, выберите шаблон товара.');
             return;
         }
-
-        if ($this->productTypeId) {
-            $this->parameters = Parameter::where('product_type_id', $this->productTypeId)
-                ->pluck('name', 'id')
-                ->mapWithKeys(fn ($name, $id) => [$id => ''])
-                ->toArray();
-
-            logger('Параметры загружены вручную для шаблона ID: '.$this->productTypeId);
-        } else {
-            $this->parameters = [];
-        }
+       $this->parameters = Parameter::where('product_type_id', $this->productTypeId)->pluck('name', 'id')->mapWithKeys(fn ($name, $id) => [$id => ''])->toArray();
     }
 
     #[On('updatePhotoOrder')]
     public function updatePhotoOrder(array $orderedKeys): void
     {
         $reordered = [];
-
         foreach ($orderedKeys as $key) {
-            $intKey = (int)$key; // 🔧 важное изменение
+            $intKey = (int)$key;
             if (isset($this->photos[$intKey])) {
                 $reordered[] = $this->photos[$intKey];
             }
         }
-
         $this->photos = $reordered;
     }
 
@@ -138,7 +123,7 @@ class Create extends Component
         $this->photoOrder = array_keys($this->photos);
     }
 
-    public function save(): void
+    public function save(): \Illuminate\Http\RedirectResponse
     {
         $this->validate([
             'name_ru' => 'required|string|max:255',
@@ -151,17 +136,15 @@ class Create extends Component
             'description_en' => 'required|string|max:160',
             'description_az' => 'required|string|max:160',
             'price' => 'required|numeric',
-            'old_price' => 'required|numeric',
+            'old_price' => 'nullable|numeric',
             'count' => 'required|numeric',
             'productTypeId' => 'required|exists:product_types,id',
             'youtube_link' => 'nullable|string|max:160',
             'category_id' => 'required|exists:categories,id',
             'photos.*' => 'image|max:2048',
         ]);
-        if (empty($this->photos)) {
-            $this->addError('photos', 'Добавьте хотя бы одно фото.');
-            return;
-        }
+
+
         // ✅ Обновляем product_type_id у категории, если он не задан
         $category = Category::find($this->category_id);
         if ($category && !$category->product_type_id) {
@@ -207,7 +190,6 @@ class Create extends Component
 
         $disk = Storage::disk('public');
         $dir = 'goods/' . $good->id;
-
 // Создаём папку (не обязательно, но если хочешь контролировать chmod)
         if (!$disk->exists($dir)) {
             if (!$disk->makeDirectory($dir)) {
@@ -216,7 +198,7 @@ class Create extends Component
             chmod($disk->path($dir), 0755);
         }
 
-// ✅ Сохраняем фот
+// ✅ Сохраняем фото
         foreach ($this->photos as $index => $photo) {
             $imageName = uniqid() . '.' . $photo->getClientOriginalExtension();
 
@@ -229,17 +211,13 @@ class Create extends Component
                     'sort_order' => $index
                 ]);
                 chmod($disk->path($storedPath), 0644);
-            //} else {
-            //    logger()->error('Ошибка при сохранении фото', [
-            //        'image' => $photo->getClientOriginalName(),
-            //    ]);
             }
         }
 
 
         session()->flash('success', 'Товар добавлен!');
-        //return redirect()->route('admin.goods.index'); //A void function must not return a value
-        redirect()->route('admin.goods.index')->send();
+        return redirect()->route('admin.goods.index'); //A void function must not return a value
+        //redirect()->route('admin.goods.index')->send();
         /*
                 //$this->reset();
                 // После reset() желательно оставить photos пустым вручную, иначе могут быть проблемы с повторной загрузкой:

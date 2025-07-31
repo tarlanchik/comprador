@@ -150,27 +150,25 @@ class Edit extends Component
 
         $photo = $this->good->images()->findOrFail($photoId);
 
-        // Удаляем файл с диска
-        $pathOnDisk = 'public/' . str_replace('storage/', '', $photo->image_path); // исправил $photo->path на $photo->image_path
-        if (Storage::exists($pathOnDisk)) {
-            Storage::delete($pathOnDisk);
+        // Удаляем файл с диска (disk('public'))
+        $relativePath = str_replace('storage/', '', $photo->image_path); // ex: "goods/10/photo.jpg"
+        if (Storage::disk('public')->exists($relativePath)) {
+            Storage::disk('public')->delete($relativePath);
         }
 
         // Удаляем запись из базы
         $photo->delete();
 
-        // Обновляем модель good, чтобы подтянуть свежие данные
+        // Обновляем модель good
         $this->good->refresh();
 
         // Обновляем коллекцию существующих фото
         $this->existingPhotos = $this->good->images()->orderBy('sort_order')->get();
 
-        // Обновляем порядок фото
+        // Обновляем порядок
         $this->photoOrder = $this->existingPhotos->pluck('id')->toArray();
-
-        // Если надо, можно вызвать принудительный ререндер (обычно не нужен)
-        // $this->dispatch('$refresh');
     }
+
 
 
     #[On('updatePhotoOrder')]
@@ -220,7 +218,7 @@ class Edit extends Component
             'description_en' => 'required|string|max:160',
             'description_az' => 'required|string|max:160',
             'price' => 'required|numeric',
-            'old_price' => 'required|numeric',
+            'old_price' => 'nullable|numeric',
             'count' => 'required|numeric',
             'productTypeId' => 'required|exists:product_types,id',
             'youtube_link' => 'nullable|string|max:160',
@@ -264,16 +262,35 @@ class Edit extends Component
             );
         }
 
-        $sortOrder = $this->good->images()->max('sort_order') + 1;
-        foreach ($this->photos as $photo) {
-            $imageName = uniqid().'.'.$photo->getClientOriginalExtension();
-            $relativePath = "goods/{$this->good->id}/{$imageName}";
-            $photo->storeAs("public/goods/{$this->good->id}", $imageName);
-            $this->good->images()->create([
-                'image_path' => "storage/{$relativePath}",
-                'sort_order' => $sortOrder++
-            ]);
+        $disk = Storage::disk('public');
+        $dir = 'goods/' . $this->good->id;
+
+// Создаём папку, если не существует
+        if (!$disk->exists($dir)) {
+            if (!$disk->makeDirectory($dir)) {
+                throw new \Exception('Ошибка: не удалось создать директорию для хранения фото.');
+            }
+            chmod($disk->path($dir), 0755);
         }
+
+// Определим начальный порядок сортировки
+        $sortOrder = $this->good->images()->max('sort_order') + 1;
+
+// Сохраняем новые фото
+        foreach ($this->photos as $index => $photo) {
+            $imageName = uniqid() . '.' . $photo->getClientOriginalExtension();
+            $storedPath = $photo->storeAs($dir, $imageName, 'public');
+
+            if ($storedPath) {
+                $this->good->images()->create([
+                    'image_path' => "storage/{$storedPath}",
+                    'sort_order' => $sortOrder++
+                ]);
+
+                chmod($disk->path($storedPath), 0644);
+            }
+        }
+
 
         session()->flash('success', 'Товар обновлён!');
         return redirect()->route('admin.goods.index');

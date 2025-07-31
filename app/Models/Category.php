@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @method static \Illuminate\Database\Eloquent\Model|null find($id, $columns = ['*'])
+ */
 class Category extends Model
 {
     protected $fillable = ['name_ru', 'name_en', 'name_az', 'parent_id','product_type_id'];
