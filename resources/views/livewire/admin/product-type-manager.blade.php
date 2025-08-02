@@ -31,11 +31,10 @@
                         <button type="submit" class="btn btn-primary">Добавить</button>
                     </div>
                 </form>
-                <ul class="list-group">
                     <ul class="list-group mb-4">
                         @foreach($types as $type)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>{{ $type->name }}</span>
+                                <span><i class="nav-icon bi bi-patch-check-fill text-primary"></i>  {{ $type->name }}</span>
                                 <div class="btn-group">
                                     <button wire:click="editType({{ $type->id }})" class="btn btn-sm btn-outline-primary">Редактировать</button>
                                     <button wire:click="manageParameters({{ $type->id }})" class="btn btn-sm btn-outline-success">Параметры</button>
@@ -44,9 +43,8 @@
                             </li>
                         @endforeach
                     </ul>
-                </ul>
+                </div>
             </div>
-        </div>
 
         @if($selectedTypeId)
             <div class="card">

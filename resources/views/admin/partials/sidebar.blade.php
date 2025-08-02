@@ -1,65 +1,75 @@
-<aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <a href="{{ route('admin.dashboard') }}" class="brand-link">
-        <span class="brand-text font-weight-light text-bold">Comprador</span>
-    </a>
+<!--begin::Sidebar-->
+<aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+    <div class="sidebar-brand">
+        <a href="{{ route('admin.dashboard') }}" class="brand-link">
+            <img src="{{ asset('vendor/adminlte/dist/img/AdminLTELogo.png') }}" alt="Administrator" class="brand-image opacity-75 shadow" />
+            <span class="brand-text fw-light">Админ панель </span>
+        </a>
+    </div>
 
-    <div class="sidebar">
+    <div class="sidebar-wrapper">
         <nav class="mt-2">
-            <ul class="nav nav-pills nav-sidebar flex-column">
+            <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="navigation" aria-label="Main navigation" data-accordion="false" id="navigation">
                 <li class="nav-item">
-                    <a href="{{ route('admin.admin-dashboard') }}"
-                       class="nav-link {{ request()->routeIs('admin.admin-dashboard') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-home"></i>
+                    <a href="{{ route('admin.admin-dashboard') }}" class="nav-link {{ request()->routeIs('admin.admin-dashboard') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-browser-edge"></i>
                         <p>Главная</p>
                     </a>
                 </li>
-
                 <li class="nav-item">
-                    <a href="{{ route('admin.admin-categories') }}"
-                       class="nav-link {{ request()->routeIs('admin.admin-categories') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-list"></i>
+                    <a href="{{ route('admin.admin-categories') }}" class="nav-link {{ request()->routeIs('admin.admin-categories') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-ui-checks-grid"></i>
                         <p>Категории</p>
                     </a>
                 </li>
-
-                @php
-                    $goodsRoutes = ['admin.goods-index', 'admin.goods-create'];
-                    $isGoodsOpen = request()->routeIs(...$goodsRoutes);
-                @endphp
-                <li class="nav-item has-treeview {{ $isGoodsOpen ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ $isGoodsOpen ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-box"></i>
-                        <p>
-                            Товары
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
+                <li class="nav-item">
+                    <a href="{{ route('admin.admin-product-types') }}" class="nav-link {{ request()->routeIs('admin.admin-product-types') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-star-half"></i>
+                        <p>Шаблоны</p>
                     </a>
-
-                    <ul class="nav nav-treeview" style="{{ $isGoodsOpen ? 'display: block;' : '' }}">
+                </li>
+                <li class="nav-item {{ request()->routeIs('admin.goods-index') ? 'menu-open' : '' }} {{ request()->routeIs('admin.goods-create') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('admin.goods-index') ? 'active' : '' }} {{ request()->routeIs('admin.goods-create') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-box-seam-fill"></i>
+                        <p>Товары <i class="nav-arrow bi bi-chevron-right"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ route('admin.goods-index') }}"
-                               class="nav-link {{ request()->routeIs('admin.goods-index') ? 'active' : '' }}">
-                                <i class="far fa-circle nav-icon"></i>
+                            <a href="{{ route('admin.goods-index') }}" class="nav-link {{ request()->routeIs('admin.goods-index') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle text-warning"></i>
                                 <p>Список товаров</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('admin.goods-create') }}"
-                               class="nav-link {{ request()->routeIs('admin.goods-create') ? 'active' : '' }}">
-                                <i class="far fa-circle nav-icon"></i>
+                            <a href="{{ route('admin.goods-create') }}" class="nav-link {{ request()->routeIs('admin.goods-create') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle text-info"></i>
                                 <p>Добавить товар</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <li class="nav-item">
-                    <a href="{{ route('admin.admin-product-types') }}"
-                       class="nav-link {{ request()->routeIs('admin.admin-product-types') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-tags"></i>
-                        <p>Шаблоны</p>
+                <li class="nav-item {{ request()->routeIs('admin.goods-index') ? 'menu-open' : '' }} {{ request()->routeIs('admin.goods-create') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('admin.goods-index') ? 'active' : '' }} {{ request()->routeIs('admin.goods-create') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-pencil-square"></i>
+                        <p>Новости <i class="nav-arrow bi bi-chevron-right"></i></p>
                     </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.goods-index') }}" class="nav-link {{ request()->routeIs('admin.goods-index') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle text-warning"></i>
+                                <p>Список новостей</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.goods-create') }}" class="nav-link {{ request()->routeIs('admin.goods-create') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle text-info"></i>
+                                <p>Добавить новость</p>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
+
             </ul>
         </nav>
     </div>
