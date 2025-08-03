@@ -1,6 +1,6 @@
-<div>
-    <div class="container">
-        <h2 class="h4 mb-4">Управление шаблонами</h2>
+<div class="container py-4">
+    <div>
+        <h2>Управление шаблонами</h2>
 
         @if (session()->has('error'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -36,9 +36,9 @@
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <span><i class="nav-icon bi bi-patch-check-fill text-primary"></i>  {{ $type->name }}</span>
                                 <div class="btn-group">
-                                    <button wire:click="editType({{ $type->id }})" class="btn btn-sm btn-outline-primary">Редактировать</button>
-                                    <button wire:click="manageParameters({{ $type->id }})" class="btn btn-sm btn-outline-success">Параметры</button>
-                                    <button wire:click="deleteType({{ $type->id }})" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    <button wire:click="editType({{ $type->id }})" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Редактировать</button>
+                                    <button wire:click="manageParameters({{ $type->id }})" class="btn btn-sm btn-success"><i class="bi bi-caret-down-fill"></i> Параметры</button>
+                                    <button wire:click="deleteType({{ $type->id }})" class="btn btn-sm btn-danger" wire:confirm="Вы уверены, что хотите удалить данный тип ?"><i class="bi bi-trash"></i> Удалить</button>
                                 </div>
                             </li>
                         @endforeach
@@ -68,8 +68,8 @@
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <span>{{ $param['name'] }}</span>
                                 <div class="btn-group">
-                                    <button wire:click="startEditingParameter({{ $param['id'] }})" class="btn btn-sm btn-outline-primary">Редактировать</button>
-                                    <button wire:click="deleteParameter({{ $param['id'] }})" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    <button wire:click="startEditingParameter({{ $param['id'] }})" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Редактировать</button>
+                                    <button wire:click="deleteParameter({{ $param['id'] }})" class="btn btn-sm btn-danger" wire:confirm="Вы уверены, что хотите удалить данный параметр ?"><i class="bi bi-trash"></i> Удалить</button>
                                 </div>
                             </li>
                         @endforeach
@@ -122,4 +122,5 @@
                 </form>
             </div>
         </div>
+    </div>
     </div>

@@ -28,13 +28,38 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $count
  * @property string|null $youtube_link
  * @property int $category_id
- *
  * @method static Builder|Good newModelQuery()
  * @method static Builder|Good newQuery()
  * @method static Builder|Good query()
  * @method static static create(array $attributes = [])
- *
  * @mixin Model
+ * @property int $id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Category|null $category
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ParameterValue> $parameterValues
+ * @property-read int|null $parameter_values_count
+ * @method static Builder<static>|Good whereCategoryId($value)
+ * @method static Builder<static>|Good whereCount($value)
+ * @method static Builder<static>|Good whereCreatedAt($value)
+ * @method static Builder<static>|Good whereDescriptionAz($value)
+ * @method static Builder<static>|Good whereDescriptionEn($value)
+ * @method static Builder<static>|Good whereDescriptionRu($value)
+ * @method static Builder<static>|Good whereId($value)
+ * @method static Builder<static>|Good whereKeywordsAz($value)
+ * @method static Builder<static>|Good whereKeywordsEn($value)
+ * @method static Builder<static>|Good whereKeywordsRu($value)
+ * @method static Builder<static>|Good whereNameAz($value)
+ * @method static Builder<static>|Good whereNameEn($value)
+ * @method static Builder<static>|Good whereNameRu($value)
+ * @method static Builder<static>|Good whereOldPrice($value)
+ * @method static Builder<static>|Good wherePrice($value)
+ * @method static Builder<static>|Good whereTitleAz($value)
+ * @method static Builder<static>|Good whereTitleEn($value)
+ * @method static Builder<static>|Good whereTitleRu($value)
+ * @method static Builder<static>|Good whereUpdatedAt($value)
+ * @method static Builder<static>|Good whereYoutubeLink($value)
+ * @mixin \Eloquent
  */
 class Good extends Model
 {

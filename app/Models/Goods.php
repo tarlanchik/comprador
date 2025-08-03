@@ -28,13 +28,40 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $count
  * @property string|null $youtube_link
  * @property int $category_id
- *
  * @method static Builder|Good newModelQuery()
  * @method static Builder|Good newQuery()
  * @method static Builder|Good query()
  * @method static static create(array $attributes = [])
- *
  * @mixin Model
+ * @property int $id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Category|null $category
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\GoodsImage> $images
+ * @property-read int|null $images_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ParameterValue> $parameterValues
+ * @property-read int|null $parameter_values_count
+ * @method static Builder<static>|Goods whereCategoryId($value)
+ * @method static Builder<static>|Goods whereCount($value)
+ * @method static Builder<static>|Goods whereCreatedAt($value)
+ * @method static Builder<static>|Goods whereDescriptionAz($value)
+ * @method static Builder<static>|Goods whereDescriptionEn($value)
+ * @method static Builder<static>|Goods whereDescriptionRu($value)
+ * @method static Builder<static>|Goods whereId($value)
+ * @method static Builder<static>|Goods whereKeywordsAz($value)
+ * @method static Builder<static>|Goods whereKeywordsEn($value)
+ * @method static Builder<static>|Goods whereKeywordsRu($value)
+ * @method static Builder<static>|Goods whereNameAz($value)
+ * @method static Builder<static>|Goods whereNameEn($value)
+ * @method static Builder<static>|Goods whereNameRu($value)
+ * @method static Builder<static>|Goods whereOldPrice($value)
+ * @method static Builder<static>|Goods wherePrice($value)
+ * @method static Builder<static>|Goods whereTitleAz($value)
+ * @method static Builder<static>|Goods whereTitleEn($value)
+ * @method static Builder<static>|Goods whereTitleRu($value)
+ * @method static Builder<static>|Goods whereUpdatedAt($value)
+ * @method static Builder<static>|Goods whereYoutubeLink($value)
+ * @mixin \Eloquent
  */
 class Goods extends Model
 {

@@ -44,7 +44,6 @@
 <script src="{{ asset('vendor/adminlte/dist/js/bootstrap.min.js') }}" crossorigin="anonymous"></script>
 <script src="{{ asset('vendor/adminlte/dist/js/adminlte.js') }}"></script>
 <script src="{{ asset('vendor/adminlte/plugins/jquery/jquery.min.js') }}"></script>
-<!--<script src="{{ asset('vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>-->
 @livewireScripts
 @stack('scripts')
 

@@ -16,7 +16,7 @@
 <div class="wrapper">
     <!-- Navbar -->
     @include('admin.partials.navbar')
-
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     <!-- Sidebar -->
     @include('admin.partials.sidebar')
 

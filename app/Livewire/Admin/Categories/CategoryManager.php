@@ -1,34 +1,32 @@
 <?php
 
-namespace App\Livewire\Admin;
+namespace App\Livewire\Admin\Categories;
 
 use App\Models\Category;
 use Livewire\Component;
+use Illuminate\Database\Eloquent\Collection;
 
 class CategoryManager extends Component
 {
-    public $name_ru;
+    public string  $name_ru;
 
-    public $name_en;
+    public string $name_en;
 
-    public $name_az;
+    public string $name_az;
 
     // Для редактирования
-    public $editNameRu;
+    public string $editNameRu;
 
-    public $editNameEn;
+    public string $editNameEn;
 
-    public $editNameAz;
+    public string $editNameAz;
 
-    public $parent_id;
+    public string $parent_id;
+    public string $editId;
+    public ?string $editParentId = null;
+    public string $editName;
 
-    public $editId;
-
-    public $editParentId;
-
-    protected string $layout = 'layouts.app';
-
-    protected $rules = [
+    protected array $rules = [
         'name_ru' => 'required|string|max:255',
         'name_en' => 'required|string|max:255',
         'name_az' => 'required|string|max:255',
@@ -39,7 +37,7 @@ class CategoryManager extends Component
         'editParentId' => 'nullable|exists:categories,id',
     ];
 
-    public function addCategory()
+    public function addCategory(): void
     {
         $this->validate([
             'name_ru' => 'required|string|max:255',
@@ -61,27 +59,29 @@ class CategoryManager extends Component
         session()->flash('success', 'Категория добавлена');
     }
 
-    public function deleteCategory($id)
+    public function deleteCategory($id): void
     {
-        $category = Category::findOrFail($id);
+        $category = Category::query()->findOrFail($id);
+        if ($category->goods()->exists()) {
+            session()->flash('error', 'Невозможно удалить категорию, к ней привязаны товары.');
+            return;
+        }
         $category->delete();
-
-        session()->flash('success', 'Категория удалена');
+        session()->flash('success', 'Категория успешно удалена');
     }
 
-    public function editCategory($id)
+    public function editCategory($id): void
     {
-        $category = Category::findOrFail($id);
+        $category = Category::query()->findOrFail($id);
         $this->editId = $category->id;
         $this->editNameRu = $category->name_ru;
         $this->editNameEn = $category->name_en;
         $this->editNameAz = $category->name_az;
         $this->editParentId = $category->parent_id;
-
         $this->dispatch('open-edit-category-modal');
     }
 
-    public function updateCategory()
+    public function updateCategory(): void
     {
         $this->validate([
             'editNameRu' => 'required|string|max:255',
@@ -90,11 +90,10 @@ class CategoryManager extends Component
             'editParentId' => 'nullable|exists:categories,id',
         ]);
 
-        $category = Category::findOrFail($this->editId);
+        $category = Category::query()->findOrFail($this->editId);
 
         if ($this->editParentId == $this->editId || $this->isDescendant($category, $this->editParentId)) {
             $this->addError('editParentId', 'Нельзя выбрать текущую категорию или её потомка в качестве родителя.');
-
             return;
         }
 
@@ -110,7 +109,7 @@ class CategoryManager extends Component
         session()->flash('success', 'Категория обновлена');
     }
 
-    protected function isDescendant(Category $category, $possibleParentId)
+    protected function isDescendant(Category $category, $possibleParentId): bool
     {
         if (! $possibleParentId) {
             return false;
@@ -123,30 +122,28 @@ class CategoryManager extends Component
 
         foreach ($children as $childId) {
             $child = Category::find($childId);
-            if ($child && $this->isDescendant($child, $possibleParentId)) {
+            if ($child instanceof Category && $this->isDescendant($child, $possibleParentId)) {
                 return true;
             }
         }
-
         return false;
     }
 
-    public function resetEdit()
+    public function resetEdit(): void
     {
         $this->editId = null;
         $this->editName = null;
         $this->editParentId = null;
-        $this->resetValidation('editName', 'editParentId');
+        $this->resetValidation(['editName', 'editParentId']);
     }
 
-    public function getCategoriesProperty()
+    public function getCategoriesProperty(): Collection
     {
         return Category::with('children.children')->whereNull('parent_id')->get();
     }
 
     public function render()
     {
-        // return view('livewire.admin.category-manager')->layout('layouts.app');
         return view('livewire.admin.category-manager')->layout('admin.layouts.admin');
     }
 }

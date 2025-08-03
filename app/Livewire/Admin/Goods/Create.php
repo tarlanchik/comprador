@@ -123,7 +123,7 @@ class Create extends Component
         $this->photoOrder = array_keys($this->photos);
     }
 
-    public function save(): \Illuminate\Http\RedirectResponse
+    public function save()
     {
         $this->validate([
             'name_ru' => 'required|string|max:255',
@@ -216,14 +216,7 @@ class Create extends Component
 
 
         session()->flash('success', 'Товар добавлен!');
-        return redirect()->route('admin.goods.index'); //A void function must not return a value
-        //redirect()->route('admin.goods.index')->send();
-        /*
-                //$this->reset();
-                // После reset() желательно оставить photos пустым вручную, иначе могут быть проблемы с повторной загрузкой:
-                //$this->photos = [];
-                //$this->photoOrder = [];
-                */
+        return redirect()->route('admin.goods.index');
     }
 
     public function render()

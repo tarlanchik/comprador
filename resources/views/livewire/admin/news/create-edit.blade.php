@@ -1,0 +1,135 @@
+<div class="container py-5">
+    <style>
+        #newPhotosList .list-group-item {
+            cursor: move;
+            user-select: none;
+            touch-action: none;
+        }
+        #newPhotosList .list-group-item {
+            position: relative;
+            z-index: 10;
+        }
+        #existingPhotosList .list-group-item {
+            cursor: move;
+            user-select: none;
+            touch-action: none;
+        }
+        #existingPhotosList .list-group-item {
+            position: relative;
+            z-index: 10;
+        }
+    </style>
+    <h2 class="mb-4">{{ $news && $news->exists ? 'Редактировать новость' : 'Добавить новость' }}</h2>
+
+    @if (session()->has('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    <form wire:submit.prevent="{{ $news && $news->exists ? 'update' : 'save' }}" enctype="multipart/form-data">
+        <ul class="nav nav-tabs mb-3" id="langTabs" role="tablist">
+            @foreach (['az', 'ru', 'en'] as $lang)
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @if($loop->first) active @endif" id="tab-{{ $lang }}" data-bs-toggle="tab" data-bs-target="#content-{{ $lang }}" type="button" role="tab">
+                        {{ strtoupper($lang) }}
+                    </button>
+                </li>
+            @endforeach
+        </ul>
+
+        <div class="tab-content mb-3">
+            @foreach (['az', 'ru', 'en'] as $lang)
+                <div class="tab-pane fade @if($loop->first) show active @endif" id="content-{{ $lang }}" role="tabpanel">
+                    <div class="mb-3">
+                        <label class="form-label">Title ({{ strtoupper($lang) }})</label>
+                        <input type="text" class="form-control" wire:model.defer="title_{{ $lang }}">
+                        @error('title_' . $lang) <div class="text-danger">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Keywords ({{ strtoupper($lang) }})</label>
+                        <input type="text" class="form-control" wire:model.defer="keywords_{{ $lang }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description ({{ strtoupper($lang) }})</label>
+                        <textarea class="form-control" rows="3" wire:model.defer="description_{{ $lang }}"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Content ({{ strtoupper($lang) }})</label>
+                        <textarea class="form-control" rows="5" wire:model.defer="content_{{ $lang }}"></textarea>
+                        @error('content_' . $lang) <div class="text-danger">{{ $message }}</div> @enderror
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">YouTube Link</label>
+            <input type="url" class="form-control" wire:model.defer="youtube_link">
+            @error('youtube_link') <div class="text-danger">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Фотографии (до 10 шт.)</label>
+            <input type="file" wire:model="photos" multiple class="form-control">
+            <small class="form-text text-muted">Вы можете загрузить до 10 изображений.</small>
+        </div>
+
+        @if(count($photos) > 0)
+            <h5 class="mt-4">Новые фотографии</h5>
+            <div x-data="sortableComponent">
+                <ul class="list-group mt-3" id="newPhotosList">
+                    @foreach ($photos as $key => $photo)
+                        <li class="handle list-group-item d-flex align-items-center gap-3" data-key="{{ $key }}">
+                            <span style="font-size: 20px;">⇅</span>
+                            <img alt="" src="{{ $photo->temporaryUrl() }}" width="100" class="img-thumbnail">
+                            <span class="flex-grow-1">Фото {{ $loop->iteration }}</span>
+                            <button wire:click="removePhoto({{ $key }})" class="btn btn-sm btn-outline-danger">Удалить</button>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @if($news->images && $news->images->count())
+            <div id="sortable-photos" class="row g-2 mb-3">
+                @foreach ($news->images->sortBy('sort_order') as $image)
+                    <div class="col-md-2" data-id="{{ $image->id }}">
+                        <div class="card">
+                            <img src="/{{ $image->image_path }}" class="card-img-top">
+                            <div class="card-body p-1 text-center">
+                                <button type="button" class="btn btn-sm btn-danger" wire:click="deleteExistingPhoto({{ $image->id }})">
+                                    Удалить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
+        <button class="btn btn-primary" type="submit">
+            {{ $news && $news->exists ? 'Сохранить изменения' : 'Добавить новость' }}
+        </button>
+    </form>
+
+    <script>
+        document.addEventListener("alpine:init", () => {
+            Alpine.data("sortableComponent", () => ({
+                init() {
+                    const el = this.$el.querySelector('#newPhotosList');
+                    if (el && !el._sortable) {
+                        new Sortable(el, {
+                            animation: 150,
+                            handle: '.handle',
+                            onEnd: () => {
+                                const order = Array.from(el.querySelectorAll('li')).map(li => li.dataset.key);
+                                const livewireComponent = Livewire.find(this.$el.closest('[wire\\:id]').getAttribute('wire:id'));
+                                livewireComponent.call('updatePhotoOrder', order);
+                            }
+                        });
+                        el._sortable = true;
+                    }
+                }
+            }));
+        });
+    </script>
+</div>

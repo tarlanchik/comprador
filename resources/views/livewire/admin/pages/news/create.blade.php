@@ -1,5 +1,5 @@
 @extends('admin.layouts.admin')
 
 @section('content')
-    @livewire('admin.category-manager')
+    @livewire('admin.news.CreateNews')
 @endsection

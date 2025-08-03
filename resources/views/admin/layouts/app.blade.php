@@ -23,6 +23,7 @@
     <div class="content-wrapper">
         <div class="content pt-4">
             <div class="container-fluid">
+                VVVVVVVVVVVVVVVVVVVVVVVVVVV
                 {{ $slot ?? '' }}
                 @yield('content')
             </div>

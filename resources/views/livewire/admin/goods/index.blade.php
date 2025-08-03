@@ -1,9 +1,8 @@
-<div class="container py-5">
+<div class="container py-4">
+    <h2>Список Товаров</h2>
     @if(session()->has('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
-
-    <h2>Все Товары</h2>
     <div class="card">
         <div class="card-header">
             <h5 class="modal-title">Список товаров</h5>
@@ -35,15 +34,17 @@
                                 <td>{{ $good->count }}</td>
                                 <!-- <td>{{ $good->created_at->format('d.m.Y') }}</td> -->
                                 <td>
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ route('admin.goods.edit', $good->id) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-pencil-square"></i> Редактировать
-                                        </a>
-                                        <button wire:click="delete({{ $good->id }})"
-                                                class="btn btn-sm btn-danger"
-                                                onclick="return confirm('Вы уверены, что хотите удалить этот товар?')">
-                                            Удалить
-                                        </button>
+                                    <div  class="float-end">
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ route('admin.goods.edit', $good->id) }}" class="btn btn-sm btn-warning">
+                                                <i class="bi bi-pencil-square"></i> Редактировать
+                                            </a>
+                                            <button wire:click="delete({{ $good->id }})"
+                                                    class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('Вы уверены, что хотите удалить этот товар?')">
+                                                <i class="bi bi-trash"></i> Удалить
+                                            </button>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
