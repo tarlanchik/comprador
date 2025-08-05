@@ -24,7 +24,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Parameter extends Model
 {
-    protected $fillable = ['name', 'product_type_id'];
+    protected $fillable = [
+        'product_type_id',
+        'name_ru',
+        'name_en',
+        'name_az',
+    ];
 
     public function productType(): BelongsTo
     {

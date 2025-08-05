@@ -23,10 +23,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ParameterValue whereParameterId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ParameterValue whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ParameterValue whereValue($value)
- * @mixin \Eloquent
- */
+  */
 class ParameterValue extends Model
 {
+    protected $table = 'parameter_values';
     protected $fillable = ['goods_id', 'parameter_id', 'value'];
 
     public function good(): BelongsTo

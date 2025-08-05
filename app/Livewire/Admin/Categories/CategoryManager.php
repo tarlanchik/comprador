@@ -3,29 +3,22 @@
 namespace App\Livewire\Admin\Categories;
 
 use App\Models\Category;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Illuminate\Database\Eloquent\Collection;
 
 class CategoryManager extends Component
 {
     public string  $name_ru;
-
     public string $name_en;
-
     public string $name_az;
-
-    // Для редактирования
     public string $editNameRu;
-
     public string $editNameEn;
-
     public string $editNameAz;
-
-    public string $parent_id;
-    public string $editId;
-    public ?string $editParentId = null;
+    public ?int $parent_id = null;
+    public ?int $editId = null;
+    public ?int $editParentId = null;
     public string $editName;
-
     protected array $rules = [
         'name_ru' => 'required|string|max:255',
         'name_en' => 'required|string|max:255',
@@ -80,7 +73,6 @@ class CategoryManager extends Component
         $this->editParentId = $category->parent_id;
         $this->dispatch('open-edit-category-modal');
     }
-
     public function updateCategory(): void
     {
         $this->validate([
@@ -89,9 +81,7 @@ class CategoryManager extends Component
             'editNameAz' => 'required|string|max:255',
             'editParentId' => 'nullable|exists:categories,id',
         ]);
-
         $category = Category::query()->findOrFail($this->editId);
-
         if ($this->editParentId == $this->editId || $this->isDescendant($category, $this->editParentId)) {
             $this->addError('editParentId', 'Нельзя выбрать текущую категорию или её потомка в качестве родителя.');
             return;
@@ -103,7 +93,6 @@ class CategoryManager extends Component
             'name_az' => $this->editNameAz,
             'parent_id' => $this->editParentId ?: null,
         ]);
-
         $this->resetEdit();
         $this->dispatch('close-edit-category-modal');
         session()->flash('success', 'Категория обновлена');
@@ -115,11 +104,9 @@ class CategoryManager extends Component
             return false;
         }
         $children = $category->children()->pluck('id')->toArray();
-
         if (in_array($possibleParentId, $children)) {
             return true;
         }
-
         foreach ($children as $childId) {
             $child = Category::find($childId);
             if ($child instanceof Category && $this->isDescendant($child, $possibleParentId)) {
@@ -141,9 +128,9 @@ class CategoryManager extends Component
     {
         return Category::with('children.children')->whereNull('parent_id')->get();
     }
-
+    #[Layout('admin.layouts.admin')]
     public function render()
     {
-        return view('livewire.admin.category-manager')->layout('admin.layouts.admin');
+        return view('livewire.admin.categories.index');
     }
 }

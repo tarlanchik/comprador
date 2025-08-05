@@ -82,7 +82,7 @@
                             <span style="font-size: 20px;">⇅</span>
                             <img alt="" src="{{ $photo->temporaryUrl() }}" width="100" class="img-thumbnail">
                             <span class="flex-grow-1">Фото {{ $loop->iteration }}</span>
-                            <button wire:click="removePhoto({{ $key }})" class="btn btn-sm btn-outline-danger">Удалить</button>
+                            <button wire:click="removePhoto({{ $key }})" class="btn btn-sm btn-danger">Удалить</button>
                         </li>
                     @endforeach
                 </ul>
@@ -90,19 +90,17 @@
         @endif
 
         @if($news->images && $news->images->count())
-            <div id="sortable-photos" class="row g-2 mb-3">
-                @foreach ($news->images->sortBy('sort_order') as $image)
-                    <div class="col-md-2" data-id="{{ $image->id }}">
-                        <div class="card">
-                            <img src="/{{ $image->image_path }}" class="card-img-top">
-                            <div class="card-body p-1 text-center">
-                                <button type="button" class="btn btn-sm btn-danger" wire:click="deleteExistingPhoto({{ $image->id }})">
-                                    Удалить
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
+            <div x-data="sortableComponentExistingPhotos">
+                <ul id="existingPhotosList" class="list-group mb-3">
+                    @foreach ($news->images->sortBy('sort_order') as $image)
+                        <li class="handle list-group-item d-flex align-items-center gap-3" data-id="{{ $image->id }}">
+                            <span style="font-size: 20px;">⇅</span>
+                            <img alt="" src="/{{ $image->image_path }}" width="100" class="img-thumbnail">
+                            <span class="flex-grow-1">Фото {{ $loop->iteration }}</span>
+                            <button type="button" class="btn btn-sm btn-danger" wire:click="deleteExistingPhoto({{ $image->id }})">Удалить</button>
+                        </li>
+                    @endforeach
+                </ul>
             </div>
         @endif
 
@@ -124,6 +122,26 @@
                                 const order = Array.from(el.querySelectorAll('li')).map(li => li.dataset.key);
                                 const livewireComponent = Livewire.find(this.$el.closest('[wire\\:id]').getAttribute('wire:id'));
                                 livewireComponent.call('updatePhotoOrder', order);
+                            }
+                        });
+                        el._sortable = true;
+                    }
+                }
+            }));
+        });
+
+        document.addEventListener("alpine:init", () => {
+            Alpine.data("sortableComponentExistingPhotos", () => ({
+                init() {
+                    const el = this.$el.querySelector('#existingPhotosList');
+                    if (el && !el._sortable) {
+                        new Sortable(el, {
+                            animation: 150,
+                            handle: '.handle',
+                            onEnd: () => {
+                                const order = Array.from(el.querySelectorAll('li')).map(li => li.dataset.id);
+                                const livewireComponent = Livewire.find(this.$el.closest('[wire\\:id]').getAttribute('wire:id'));
+                                livewireComponent.call('updateExistingPhotoOrder', order);
                             }
                         });
                         el._sortable = true;

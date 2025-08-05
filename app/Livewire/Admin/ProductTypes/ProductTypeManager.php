@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin;
+namespace App\Livewire\Admin\ProductTypes;
 
 use App\Models\Category;
 use App\Models\Parameter;
@@ -10,28 +10,30 @@ use Livewire\Component;
 class ProductTypeManager extends Component
 {
     public bool $showModal = false;
-
     public object $types;
-
     public string $name;
-
     public ?string $selectedTypeName = null;
-
     public ?string $selectedTypeId = null;
-
-    public string $parameterName;
-
+    public string $parameterNameRu = '';
+    public string $parameterNameEn = '';
+    public string $parameterNameAz = '';
     public array $parameterList = [];
-
-    public ?string $editingParameterId = null;
-
     public string $editingParameterName = '';
-
+    public ?string $editId = '';
+    public ?string $editName = '';
+    public ?string $editParentId = '';
     public ?string $editTypeId = null;
-
+    public ?int $parent_id = null;
     public string $editTypeName = '';
-
-    public function editCategory($id)
+    public ?string $editingParameterId = null;
+    public string $editingParameterNameRu = '';
+    public string $editingParameterNameEn = '';
+    public string $editingParameterNameAz = '';
+    public function mount(): void
+    {
+        $this->loadTypes();
+    }
+    public function editCategory($id): void
     {
         $category = Category::findOrFail($id);
         $this->editId = $category->id;
@@ -41,7 +43,7 @@ class ProductTypeManager extends Component
         $this->dispatch('open-edit-category-modal');
     }
 
-    public function updateCategory()
+    public function updateCategory(): void
     {
         $this->validate([
             'editName' => 'required|string|max:255',
@@ -53,7 +55,6 @@ class ProductTypeManager extends Component
         // Проверка, чтобы категория не была своим же родителем
         if ($this->editParentId == $this->editId) {
             session()->flash('error', 'Категория не может быть родителем самой себя');
-
             return;
         }
 
@@ -72,51 +73,57 @@ class ProductTypeManager extends Component
         session()->flash('success', 'Категория обновлена');
     }
 
-    public function startEditingParameter($id)
+    public function startEditingParameter($id): void
     {
         $param = Parameter::find($id);
         if ($param) {
             $this->editingParameterId = $param->id;
-            $this->editingParameterName = $param->name;
+            $this->editingParameterNameRu = $param->name_ru ?? '';
+            $this->editingParameterNameEn = $param->name_en ?? '';
+            $this->editingParameterNameAz = $param->name_az ?? '';
 
             $this->dispatch('open-edit-parameter-modal');
         }
     }
 
-    public function updateParameter()
+    public function updateParameter(): void
     {
         $this->validate([
-            'editingParameterName' => 'required|string|max:255',
+            'editingParameterNameRu' => 'required|string|max:255',
+            'editingParameterNameEn' => 'required|string|max:255',
+            'editingParameterNameAz' => 'required|string|max:255',
         ]);
 
         $param = Parameter::find($this->editingParameterId);
         if ($param) {
             $param->update([
-                'name' => $this->editingParameterName,
+                'name_ru' => $this->editingParameterNameRu,
+                'name_en' => $this->editingParameterNameEn,
+                'name_az' => $this->editingParameterNameAz,
             ]);
         }
+
+        $this->editingParameterId = null;
+        $this->editingParameterNameRu = '';
+        $this->editingParameterNameEn = '';
+        $this->editingParameterNameAz = '';
 
         $this->dispatch('close-edit-parameter-modal');
         $this->manageParameters($this->selectedTypeId);
     }
 
-    public function cancelEditing()
+    public function cancelEditing(): void
     {
         $this->editingParameterId = null;
         $this->editingParameterName = '';
     }
 
-    public function mount()
-    {
-        $this->loadTypes();
-    }
-
-    public function loadTypes()
+    public function loadTypes(): void
     {
         $this->types = ProductType::with('parameters')->get();
     }
 
-    public function addType()
+    public function addType(): void
     {
         $this->validate(['name' => 'required|string']);
         ProductType::create(['name' => $this->name]);
@@ -124,7 +131,7 @@ class ProductTypeManager extends Component
         $this->loadTypes();
     }
 
-    public function deleteType($id)
+    public function deleteType($id): void
     {
         ProductType::find($id)?->delete();
         $this->loadTypes();
@@ -134,7 +141,7 @@ class ProductTypeManager extends Component
         }
     }
 
-    public function editType($id)
+    public function editType($id): void
     {
         $type = ProductType::findOrFail($id);
         $this->editTypeId = $type->id;
@@ -143,7 +150,7 @@ class ProductTypeManager extends Component
         $this->dispatch('open-edit-type-modal');
     }
 
-    public function updateType()
+    public function updateType(): void
     {
         $this->validate([
             'editTypeName' => 'required|string|max:255',
@@ -161,16 +168,8 @@ class ProductTypeManager extends Component
         $this->dispatch('close-edit-type-modal');
     }
 
-    public function manageParameters($typeId)
+    public function manageParameters($typeId): void
     {
-        /*
-        $this->selectedTypeId = $typeId;
-        $this->parameterList = Parameter::where('product_type_id', $typeId)->get()->toArray();
-        $this->showModal = true;
-
-        $this->dispatch('open-parameters-modal');
-        */
-
         $this->selectedTypeId = $typeId;
         $type = ProductType::find($typeId);
         $this->selectedTypeName = $type?->name;
@@ -181,33 +180,43 @@ class ProductTypeManager extends Component
         $this->dispatch('open-parameters-modal');
     }
 
-    public function closeModal()
+    public function closeModal(): void
     {
         $this->showModal = false;
         $this->dispatch('close-parameters-modal');
     }
 
-    public function addParameter()
+    public function addParameter(): void
     {
-        logger('Добавление параметра: '.$this->parameterName.' для типа: '.$this->selectedTypeId);
-        $this->validate(['parameterName' => 'required']);
+        //logger('Добавление параметра: '.$this->parameterName.' для типа: '.$this->selectedTypeId);
+        /*$this->validate(['parameterName' => 'required']);
         if (! $this->selectedTypeId) {
-            // session()->flash('error', 'Тип товара не выбран!');
             $this->dispatch('error', message: 'Тип товара не выбран!');
-
+            return;
+        }
+        */
+        $this->validate([
+            'parameterNameRu' => 'required|string|max:255',
+            'parameterNameEn' => 'required|string|max:255',
+            'parameterNameAz' => 'required|string|max:255',
+        ]);
+        if (! $this->selectedTypeId) {
+            $this->dispatch('error', message: 'Тип товара не выбран!');
             return;
         }
 
         Parameter::create([
             'product_type_id' => $this->selectedTypeId,
-            'name' => $this->parameterName,
+            'name_ru' => $this->parameterNameRu,
+            'name_en' => $this->parameterNameEn,
+            'name_az' => $this->parameterNameAz,
         ]);
 
-        $this->parameterName = '';
+        $this->reset(['parameterNameRu', 'parameterNameEn', 'parameterNameAz']);
         $this->manageParameters($this->selectedTypeId);
     }
 
-    public function deleteParameter($paramId)
+    public function deleteParameter($paramId): void
     {
         Parameter::find($paramId)?->delete();
         $this->manageParameters($this->selectedTypeId);
@@ -215,6 +224,6 @@ class ProductTypeManager extends Component
 
     public function render()
     {
-        return view('livewire.admin.product-type-manager')->layout('admin.layouts.admin');
+        return view('livewire.admin.product-types.index')->layout('admin.layouts.admin');
     }
 }

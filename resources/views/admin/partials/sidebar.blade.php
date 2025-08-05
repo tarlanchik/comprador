@@ -23,25 +23,25 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.admin-product-types') }}" class="nav-link {{ request()->routeIs('admin.admin-product-types') ? 'active' : '' }}">
+                    <a href="{{ route('admin.product-types') }}" class="nav-link {{ request()->routeIs('admin.product-types') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-star-half"></i>
                         <p>Шаблоны</p>
                     </a>
                 </li>
-                <li class="nav-item {{ request()->routeIs('admin.goods-index') ? 'menu-open' : '' }} {{ request()->routeIs('admin.goods-create') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->routeIs('admin.goods-index') ? 'active' : '' }} {{ request()->routeIs('admin.goods-create') ? 'active' : '' }}">
+                <li class="nav-item {{ request()->routeIs('admin.goods.edit') ? 'menu-open' : '' }} {{ request()->routeIs('admin.goods.index') ? 'menu-open' : '' }} {{ request()->routeIs('admin.goods.create') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('admin.goods.index') ? 'active' : '' }} {{ request()->routeIs('admin.goods.create') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-box-seam-fill"></i>
                         <p>Товары <i class="nav-arrow bi bi-chevron-right"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ route('admin.goods-index') }}" class="nav-link {{ request()->routeIs('admin.goods-index') ? 'active' : '' }}">
+                            <a href="{{ route('admin.goods.index') }}" class="nav-link {{ request()->routeIs('admin.goods.index') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle text-warning"></i>
                                 <p>Список товаров</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('admin.goods-create') }}" class="nav-link {{ request()->routeIs('admin.goods-create') ? 'active' : '' }}">
+                            <a href="{{ route('admin.goods.create') }}" class="nav-link {{ request()->routeIs('admin.goods.create') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle text-info"></i>
                                 <p>Добавить товар</p>
                             </a>
@@ -49,7 +49,7 @@
                     </ul>
                 </li>
 
-                <li class="nav-item {{ request()->routeIs('admin.news.index') ? 'menu-open' : '' }} {{ request()->routeIs('admin.news-create') ? 'menu-open' : '' }}">
+                <li class="nav-item {{ request()->routeIs('admin.news.edit') ? 'menu-open' : '' }} {{ request()->routeIs('admin.news.index') ? 'menu-open' : '' }} {{ request()->routeIs('admin.news.create') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->routeIs('admin.news.index') ? 'active' : '' }} {{ request()->routeIs('admin.news-create') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-pencil-square"></i>
                         <p>Новости <i class="nav-arrow bi bi-chevron-right"></i></p>
@@ -62,14 +62,13 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('admin.news-create') }}" class="nav-link {{ request()->routeIs('admin.news-create') ? 'active' : '' }}">
+                            <a href="{{ route('admin.news.create') }}" class="nav-link {{ request()->routeIs('admin.news.create') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle text-info"></i>
                                 <p>Добавить новость</p>
                             </a>
                         </li>
                     </ul>
                 </li>
-
             </ul>
         </nav>
     </div>

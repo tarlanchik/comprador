@@ -9,11 +9,15 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+    protected $fillable = [
+        'product_types',
+        'name'
+    ];
     public function up(): void
     {
         Schema::create('product_types', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->timestamps();
         });
     }

@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GoodsImage whereImagePath($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GoodsImage whereSortOrder($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GoodsImage whereUpdatedAt($value)
- * @mixin \Eloquent
+ * @mixin \Eloquent //Undefined class 'Eloquent'
  */
 class GoodsImage extends Model
 {

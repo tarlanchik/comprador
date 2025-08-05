@@ -13,79 +13,48 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
 use Illuminate\Database\Eloquent\Collection;
+use Livewire\Attributes\Layout;
 
 class Edit extends Component
 {
     use WithFileUploads;
 
     public bool $isEdit = false;
-
     public Goods $good;
-
     public ?string $name_ru = '';
-
     public ?string $name_en;
-
     public ?string $name_az;
-
     public ?string $title_ru;
-
     public ?string $title_en;
-
     public ?string $title_az;
-
     public ?string $keywords_ru;
-
     public ?string $keywords_en;
-
     public ?string $keywords_az;
-
     public ?string $description_ru;
-
     public ?string $description_en;
-
     public ?string $description_az;
-
     public ?float $price = null;
-
     public ?float $old_price = null;
-
     public ?int $count = null;
-
     public ?int $category_id = null;
-
     public ?int $productTypeId = null;
-
     public ?string $youtube_link = null;
-
     public ?string $productType;
-
     public array $photos = [];
-
     public array $photoOrder = [];
-
     public array $parameters = [];
-
     public array $categories = [];
     public array $orderedKeys = [];
     public Collection $existingPhotos;
     public function mount(Goods $good): void
     {
-        $this->existingPhotos = $this->good->images()->orderBy('sort_order')->get();
-        $this->good = $good->load('images');
-        $this->good = $good->load('category.productType');
-
-        if ($this->productTypeId) {
-            $allParams = Parameter::where('product_type_id', $this->productTypeId)->pluck('name', 'id')->toArray();
-            $existingValues = $good->parameterValues()->pluck('value', 'parameter_id')->toArray();
-
-            foreach ($allParams as $paramId => $name) {
-                $this->parameters[$paramId] = $existingValues[$paramId] ?? '';
-            }
-        }
+        $this->good = $good;
+        $this->good = $good->load(['images', 'category.productType', 'parameterValues']);
+        $this->existingPhotos = $this->good->images->sortBy('sort_order');
+        $this->photoOrder = $this->good->images->pluck('id')->toArray();
 
         $this->isEdit = true;
-        $this->name_ru = $good->name_ru; // Property accessed via magic method
+        $this->name_ru = $good->name_ru;
         $this->name_en = $good->name_en;
         $this->name_az = $good->name_az;
         $this->title_ru = $good->title_ru;
@@ -102,26 +71,30 @@ class Edit extends Component
         $this->count = $good->count;
         $this->youtube_link = $good->youtube_link;
         $this->category_id = $good->category_id;
-        // $this->productTypeId = $this->good->category?->productType?->id;
-
-        // ✅ ВАЖНО: подтягиваем тип товара
+// Тип товара
         $this->productTypeId = $good->category?->productType?->id;
-
-        $this->photoOrder = $good->images->pluck('id')->toArray();
-
-        // ✅ Загружаем параметры для типа товара
-        $allParams = Parameter::where('product_type_id', $this->productTypeId)->pluck('name', 'id')->toArray();
-        $existingValues = $good->parameterValues()->pluck('value', 'parameter_id')->toArray();
-
-        // ✅ Объединяем: все параметры + существующие значения
         $this->parameters = [];
-        foreach ($allParams as $paramId => $name) {
-            $this->parameters[$paramId] = $existingValues[$paramId] ?? '';
-        }
 
+        if ($this->productTypeId) {
+            // Загружаем параметры для выбранного типа товара
+            $allParams = Parameter::where('product_type_id', $this->productTypeId)
+                ->pluck('name_ru', 'id')
+                ->toArray();
+
+            // Получаем текущие значения параметров
+            $existingValues = $good->parameterValues
+                ->pluck('value', 'parameter_id')
+                ->toArray();
+
+            // Формируем массив параметров для формы
+            foreach ($allParams as $paramId => $name) {
+                $this->parameters[$paramId] = $existingValues[$paramId] ?? '';
+            }
+        }
         // Категории
         $this->categories = Category::getOrderedCategories();
     }
+
 
     public function updatedPhotos(): void
     {
@@ -135,41 +108,28 @@ class Edit extends Component
     {
         foreach ($orderedIds as $index => $id) {
             GoodsImage::where('id', $id)
-                ->where('goods_id', $this->good->id) // Безопасность: только у текущего товара
+                ->where('goods_id', $this->good->id)
                 ->update(['sort_order' => $index + 1]);
         }
-
         $this->photoOrder = $orderedIds;
-        $this->good->refresh(); // Обновить модель товара и его связи
-        $this->dispatch('$refresh'); // Обновить компонент Livewire
+        $this->good->refresh();
+        $this->existingPhotos = $this->good->images()->orderBy('sort_order')->get();
+        $this->dispatch('$refresh');
     }
 
     public function deleteExistingPhoto($photoId): void
     {
-        Log::alert('deleteExistingPhoto');
-
+        //Log::alert('deleteExistingPhoto');
         $photo = $this->good->images()->findOrFail($photoId);
-
-        // Удаляем файл с диска (disk('public'))
         $relativePath = str_replace('storage/', '', $photo->image_path); // ex: "goods/10/photo.jpg"
         if (Storage::disk('public')->exists($relativePath)) {
             Storage::disk('public')->delete($relativePath);
         }
-
-        // Удаляем запись из базы
         $photo->delete();
-
-        // Обновляем модель good
         $this->good->refresh();
-
-        // Обновляем коллекцию существующих фото
         $this->existingPhotos = $this->good->images()->orderBy('sort_order')->get();
-
-        // Обновляем порядок
         $this->photoOrder = $this->existingPhotos->pluck('id')->toArray();
     }
-
-
 
     #[On('updatePhotoOrder')]
     public function updatePhotoOrder($orderedKeys): void
@@ -191,19 +151,13 @@ class Edit extends Component
         if ($this->productTypeId) {
             // Получаем все параметры для данного типа товара
             $params = Parameter::where('product_type_id', $this->productTypeId)->pluck('id');
-
-            // Берем значения из товара
             $existingValues = $this->good->parameterValues()->pluck('value', 'parameter_id')->toArray();
-            //Log::info('params', $params->toArray());
-            //Log::info('existingValues', $existingValues);
-            // Объединяем: все параметры → если есть значение, подставляем, если нет — пусто
             $this->parameters = [];
             foreach ($params as $paramId) {
                 $this->parameters[$paramId] = $existingValues[$paramId] ?? '';
             }
         }
     }
-
 
     public function save()
     {
@@ -251,21 +205,24 @@ class Edit extends Component
         ]);
 
         foreach ($this->parameters as $paramId => $value) {
-            $this->good->parameterValues()->updateOrCreate(
-                [
-                    'goods_id' => $this->good->id, // добавляем goods_id
-                    'parameter_id' => $paramId,
-                ],
-                [
-                    'value' => $value,
-                ]
-            );
+            try {
+                $this->good->parameterValues()->updateOrCreate(
+                    [
+                        'goods_id' => $this->good->id,
+                        'parameter_id' => $paramId,
+                    ],
+                    [
+                        'value' => $value,
+                    ]
+                );
+            } catch (\Exception $e) {
+                Log::error("Ошибка сохранения параметра {$paramId}: " . $e->getMessage());
+            }
         }
 
         $disk = Storage::disk('public');
         $dir = 'goods/' . $this->good->id;
 
-// Создаём папку, если не существует
         if (!$disk->exists($dir)) {
             if (!$disk->makeDirectory($dir)) {
                 throw new \Exception('Ошибка: не удалось создать директорию для хранения фото.');
@@ -273,29 +230,24 @@ class Edit extends Component
             chmod($disk->path($dir), 0755);
         }
 
-// Определим начальный порядок сортировки
         $sortOrder = $this->good->images()->max('sort_order') + 1;
 
-// Сохраняем новые фото
         foreach ($this->photos as $index => $photo) {
             $imageName = uniqid() . '.' . $photo->getClientOriginalExtension();
             $storedPath = $photo->storeAs($dir, $imageName, 'public');
-
             if ($storedPath) {
                 $this->good->images()->create([
                     'image_path' => "storage/{$storedPath}",
                     'sort_order' => $sortOrder++
                 ]);
-
                 chmod($disk->path($storedPath), 0644);
             }
         }
-
-
         session()->flash('success', 'Товар обновлён!');
         return redirect()->route('admin.goods.index');
     }
 
+    #[Layout('admin.layouts.admin')]
     public function render()
     {
         $existingPhotos = $this->good->images()->orderBy('sort_order')->get();
@@ -303,6 +255,6 @@ class Edit extends Component
             'categories' => $this->categories,
             'productTypes' => ProductType::all(),
             'existingPhotos' => $existingPhotos,
-        ])->layout('admin.layouts.admin');
+        ]);
     }
 }

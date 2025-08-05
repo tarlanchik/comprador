@@ -79,15 +79,12 @@ class Goods extends Model
     {
         return $this->belongsTo(Category::class);
     }
-
     public function images(): HasMany
     {
         return $this->hasMany(GoodsImage::class);
-       // return $this->hasMany(GoodsImage::class);
-        //return $this->hasMany(GoodsImage::class, 'goods_id')->orderBy('sort_order');
     }
     public function parameterValues(): HasMany
     {
-        return $this->hasMany(ParameterValue::class);
+        return $this->hasMany(ParameterValue::class, 'goods_id');
     }
 }

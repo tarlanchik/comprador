@@ -145,8 +145,8 @@
 
                         @foreach($parameters as $paramId => $value)
                             <div class="mb-3">
-                                <label class="form-label">{{ $params[$paramId]->name ?? 'Параметр' }}</label>
-                                <input type="text" wire:model.defer="parameters.{{ $paramId }}" class="form-control">
+                                <label for="param_{{ $paramId }}" class="form-label">{{ \App\Models\Parameter::find($paramId)?->name_ru }}</label>
+                                <input type="text" wire:model.defer="parameters.{{ $paramId }}" id="param_{{ $paramId }}" class="form-control">
                             </div>
                         @endforeach
                     </div>

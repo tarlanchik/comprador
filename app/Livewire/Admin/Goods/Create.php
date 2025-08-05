@@ -100,7 +100,7 @@ class Create extends Component
             session()->flash('parameter_error', 'Пожалуйста, выберите шаблон товара.');
             return;
         }
-       $this->parameters = Parameter::where('product_type_id', $this->productTypeId)->pluck('name', 'id')->mapWithKeys(fn ($name, $id) => [$id => ''])->toArray();
+       $this->parameters = Parameter::where('product_type_id', $this->productTypeId)->pluck('name_ru', 'id')->mapWithKeys(fn ($name, $id) => [$id => ''])->toArray();
     }
 
     #[On('updatePhotoOrder')]
@@ -190,7 +190,7 @@ class Create extends Component
 
         $disk = Storage::disk('public');
         $dir = 'goods/' . $good->id;
-// Создаём папку (не обязательно, но если хочешь контролировать chmod)
+
         if (!$disk->exists($dir)) {
             if (!$disk->makeDirectory($dir)) {
                 throw new \Exception('Ошибка: не удалось создать директорию для хранения фото.');
@@ -198,13 +198,10 @@ class Create extends Component
             chmod($disk->path($dir), 0755);
         }
 
-// ✅ Сохраняем фото
         foreach ($this->photos as $index => $photo) {
             $imageName = uniqid() . '.' . $photo->getClientOriginalExtension();
-
             // Сохраняем на диск public (Laravel сам создаёт поддиректории)
             $storedPath = $photo->storeAs($dir, $imageName, 'public');
-
             if ($storedPath) {
                 $good->images()->create([
                     'image_path' => "storage/{$storedPath}",
@@ -213,8 +210,6 @@ class Create extends Component
                 chmod($disk->path($storedPath), 0644);
             }
         }
-
-
         session()->flash('success', 'Товар добавлен!');
         return redirect()->route('admin.goods.index');
     }

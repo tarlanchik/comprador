@@ -2,6 +2,7 @@
 namespace App\Livewire\Admin\News;
 
 use App\Models\News;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Str;
@@ -115,7 +116,7 @@ class CreateNews extends Component
             }
         }
         session()->flash('success', 'Новость добавлена.');
-        return redirect()->route('admin.news.list');
+        return redirect()->route('admin.news.index');
     }
 
     protected function storePhoto(News $news, UploadedFile $photo): void
@@ -130,7 +131,7 @@ class CreateNews extends Component
             'sort_order' => $news->images()->count()
         ]);
     }
-
+    #[Layout('admin.layouts.admin')]
     public function render()
     {
         return view('livewire.admin.news.create-edit');

@@ -2,6 +2,7 @@
 namespace App\Livewire\Admin\News;
 
 use App\Models\News;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 //use Illuminate\Support\Facades\Log;
@@ -9,10 +10,8 @@ use Livewire\WithPagination;
 class NewsList extends Component
 {
     use WithPagination;
-
     public string $search = '';
     protected array $updatesQueryString = ['search'];
-
     public function searchNews(): void
     {
        // Log::debug('searchNews вызван, search = ' . $this->search);
@@ -30,7 +29,7 @@ class NewsList extends Component
         $news->delete();
         session()->flash('success', 'Новость удалена.');
     }
-
+    #[Layout('admin.layouts.admin')]
     public function render()
     {
         //Log::debug('Поисковый запрос:', ['search' => $this->search]);

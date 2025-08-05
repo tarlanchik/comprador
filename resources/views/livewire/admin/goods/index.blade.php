@@ -5,7 +5,17 @@
     @endif
     <div class="card">
         <div class="card-header">
-            <h5 class="modal-title">Список товаров</h5>
+            <fieldset class="border rounded p-3 mb-4">
+                <legend class="float-none w-auto px-2">
+                    Поиск товаров
+                </legend>
+                <div class="d-flex mb-3">
+                    <input type="text" wire:model.defer="search" placeholder="Поиск..." class="form-control me-2" />
+                    <button wire:click="$refresh" class="btn btn-primary">
+                        Поиск
+                    </button>
+                </div>
+            </fieldset>
         </div>
         <div class="card-body">
             <div class="card">

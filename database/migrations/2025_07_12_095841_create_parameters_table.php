@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('parameters', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_type_id')->constrained()->onDelete('cascade');
-            $table->string('name'); // Например: "Сокет"
+            $table->string('name_ru')->nullable();
+            $table->string('name_en')->nullable();
+            $table->string('name_az')->nullable();
             $table->timestamps();
         });
     }
