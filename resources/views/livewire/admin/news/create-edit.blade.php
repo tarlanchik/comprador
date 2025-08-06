@@ -1,4 +1,17 @@
 <div class="container py-5">
+    @push('styles')
+        <link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.0/dist/trix.css">
+    @endpush
+
+    @push('scripts')
+        <script type="text/javascript" src="https://unpkg.com/trix@2.0.0/dist/trix.umd.min.js"></script>
+            <script>
+                document.addEventListener("trix-file-accept", function (event) {
+                    event.preventDefault();
+                    alert("Загрузка файлов отключена.");
+                });
+            </script>
+    @endpush
     <style>
         #newPhotosList .list-group-item {
             cursor: move;
@@ -54,7 +67,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Content ({{ strtoupper($lang) }})</label>
-                        <textarea class="form-control" rows="5" wire:model.defer="content_{{ $lang }}"></textarea>
+                        <input id="content_{{ $lang }}" type="hidden" wire:model.defer="content_en">
+                        <trix-editor input="content_{{ $lang }}"></trix-editor>
                         @error('content_' . $lang) <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
                 </div>

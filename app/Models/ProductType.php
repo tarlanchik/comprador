@@ -19,8 +19,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductType whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductType whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductType whereUpdatedAt($value)
- * @mixin \Eloquent
- */
+ * @extends \Illuminate\Database\Eloquent\Model<\App\Models\ProductType>
+*/
 class ProductType extends Model
 {
     protected $fillable = ['name'];

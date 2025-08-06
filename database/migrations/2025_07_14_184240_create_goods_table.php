@@ -39,6 +39,7 @@ return new class extends Migration
 
             $table->string('youtube_link')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
 
     }

@@ -24,6 +24,7 @@ return new class extends Migration
             $table->text('description_en')->nullable();
             $table->string('youtube_link')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

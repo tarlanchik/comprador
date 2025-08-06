@@ -78,7 +78,7 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <span>🔧 {{ $param['name_ru'] }}</span>
                                     <div class="btn-group">
-                                        <button wire:click="startEditingParameter({{ $param['id'] }})" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Редактировать</button>
+                                        <button wire:click="startEditingParameter({{ $param->id }})" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Редактировать</button>
                                         <button wire:click="deleteParameter({{ $param['id'] }})" class="btn btn-sm btn-danger" wire:confirm="Вы уверены, что хотите удалить данный параметр ?"><i class="bi bi-trash"></i> Удалить</button>
                                     </div>
                                 </li>
@@ -90,7 +90,8 @@
         @endif
     </div>
 
-    <!-- Edit Parameter Modal --><div wire:ignore.self class="modal fade" id="editParameterModal" tabindex="-1" aria-labelledby="editParameterModalLabel" aria-hidden="true">
+    <!-- Edit Parameter Modal -->
+    <div wire:ignore.self class="modal fade" id="editParameterModal" tabindex="-1" aria-labelledby="editParameterModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -121,8 +122,6 @@
             </div>
         </div>
     </div>
-
-
 
     <div wire:ignore.self class="modal fade" id="editTypeModal" tabindex="-1" aria-labelledby="editTypeModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -158,6 +157,21 @@
             modal.hide();
         }
     });
+
+    window.addEventListener('open-edit-type-modal', () => {
+        let modal = new bootstrap.Modal(document.getElementById('editTypeModal'));
+        modal.show();
+    });
+
+    window.addEventListener('close-edit-type-modal', () => {
+        const modalEl = document.getElementById('editTypeModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) {
+            modal.hide();
+        }
+    });
+
+
 </script>
 
 

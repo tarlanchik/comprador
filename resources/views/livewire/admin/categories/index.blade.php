@@ -157,4 +157,21 @@
             </div>
         </div>
     @endif
+    @push('scripts')
+        <script>
+            window.addEventListener('open-edit-category-modal', () => {
+                const modal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
+                modal.show();
+            });
+
+            window.addEventListener('close-edit-category-modal', () => {
+                const modalElement = document.getElementById('editCategoryModal');
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            });
+        </script>
+    @endpush
+
 </div>

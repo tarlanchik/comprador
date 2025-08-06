@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -30,9 +32,23 @@ class Parameter extends Model
         'name_en',
         'name_az',
     ];
-
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Goods::class,                // Модель товара
+            'parameter_values',          // Название pivot-таблицы
+            'parameter_id',              // Внешний ключ для Parameter в pivot-таблице
+            'goods_id'                   // Внешний ключ для Goods в pivot-таблице
+        );
+    }
     public function productType(): BelongsTo
     {
         return $this->belongsTo(ProductType::class);
     }
+
+    public function parameterValues(): HasMany
+    {
+        return $this->hasMany(ParameterValue::class, 'parameter_id', 'id');
+    }
+
 }

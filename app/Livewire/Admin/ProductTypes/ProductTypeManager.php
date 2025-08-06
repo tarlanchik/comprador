@@ -5,7 +5,11 @@ namespace App\Livewire\Admin\ProductTypes;
 use App\Models\Category;
 use App\Models\Parameter;
 use App\Models\ProductType;
+use Illuminate\Database\Eloquent\Collection;
+//use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
+
 
 class ProductTypeManager extends Component
 {
@@ -17,7 +21,8 @@ class ProductTypeManager extends Component
     public string $parameterNameRu = '';
     public string $parameterNameEn = '';
     public string $parameterNameAz = '';
-    public array $parameterList = [];
+    public Collection $parameterList;
+
     public string $editingParameterName = '';
     public ?string $editId = '';
     public ?string $editName = '';
@@ -29,10 +34,12 @@ class ProductTypeManager extends Component
     public string $editingParameterNameRu = '';
     public string $editingParameterNameEn = '';
     public string $editingParameterNameAz = '';
+
     public function mount(): void
     {
         $this->loadTypes();
     }
+
     public function editCategory($id): void
     {
         $category = Category::findOrFail($id);
@@ -52,7 +59,6 @@ class ProductTypeManager extends Component
 
         $category = Category::findOrFail($this->editId);
 
-        // Проверка, чтобы категория не была своим же родителем
         if ($this->editParentId == $this->editId) {
             session()->flash('error', 'Категория не может быть родителем самой себя');
             return;
@@ -63,10 +69,7 @@ class ProductTypeManager extends Component
             'parent_id' => $this->editParentId,
         ]);
 
-        // Закрываем модальное окно
         $this->dispatch('close-edit-category-modal');
-
-        // Сброс полей и обновление списка
         $this->resetInput();
         $this->loadCategories();
 
@@ -75,6 +78,7 @@ class ProductTypeManager extends Component
 
     public function startEditingParameter($id): void
     {
+        //Log::info('method startEditingParameter called');
         $param = Parameter::find($id);
         if ($param) {
             $this->editingParameterId = $param->id;
@@ -89,9 +93,24 @@ class ProductTypeManager extends Component
     public function updateParameter(): void
     {
         $this->validate([
-            'editingParameterNameRu' => 'required|string|max:255',
-            'editingParameterNameEn' => 'required|string|max:255',
-            'editingParameterNameAz' => 'required|string|max:255',
+            'editingParameterNameRu' => [
+                'required', 'string', 'max:255',
+                Rule::unique('parameters', 'name_ru')
+                    ->ignore($this->editingParameterId)
+                    ->where(fn ($query) => $query->where('product_type_id', $this->selectedTypeId)),
+            ],
+            'editingParameterNameEn' => [
+                'required', 'string', 'max:255',
+                Rule::unique('parameters', 'name_en')
+                    ->ignore($this->editingParameterId)
+                    ->where(fn ($query) => $query->where('product_type_id', $this->selectedTypeId)),
+            ],
+            'editingParameterNameAz' => [
+                'required', 'string', 'max:255',
+                Rule::unique('parameters', 'name_az')
+                    ->ignore($this->editingParameterId)
+                    ->where(fn ($query) => $query->where('product_type_id', $this->selectedTypeId)),
+            ],
         ]);
 
         $param = Parameter::find($this->editingParameterId);
@@ -133,17 +152,26 @@ class ProductTypeManager extends Component
 
     public function deleteType($id): void
     {
-        ProductType::find($id)?->delete();
+        $type = ProductType::with('parameters')->find($id);
+
+        if ($type && $type->parameters->count() > 0) {
+            session()->flash('error', 'Нельзя удалить тип товара, к которому привязаны параметры.');
+            return;
+        }
+
+        $type?->delete();
         $this->loadTypes();
+
         if ($this->selectedTypeId == $id) {
             $this->selectedTypeId = null;
-            $this->parameterList = [];
+            $this->parameterList = new \Illuminate\Database\Eloquent\Collection();
         }
     }
 
     public function editType($id): void
     {
-        $type = ProductType::findOrFail($id);
+        $type = ProductType::query()->findOrFail($id);
+        //$type = ProductType::findOrFail($id);
         $this->editTypeId = $type->id;
         $this->editTypeName = $type->name;
 
@@ -156,15 +184,14 @@ class ProductTypeManager extends Component
             'editTypeName' => 'required|string|max:255',
         ]);
 
-        $type = ProductType::findOrFail($this->editTypeId);
+        $type = ProductType::query()->findOrFail($this->editTypeId);
         $type->name = $this->editTypeName;
         $type->save();
 
         $this->editTypeId = null;
         $this->editTypeName = '';
 
-        $this->loadTypes(); // обновляем список
-
+        $this->loadTypes();
         $this->dispatch('close-edit-type-modal');
     }
 
@@ -174,7 +201,7 @@ class ProductTypeManager extends Component
         $type = ProductType::find($typeId);
         $this->selectedTypeName = $type?->name;
 
-        $this->parameterList = Parameter::where('product_type_id', $typeId)->get()->toArray();
+        $this->parameterList = Parameter::where('product_type_id', $typeId)->get();
         $this->showModal = true;
 
         $this->dispatch('open-parameters-modal');
@@ -188,19 +215,25 @@ class ProductTypeManager extends Component
 
     public function addParameter(): void
     {
-        //logger('Добавление параметра: '.$this->parameterName.' для типа: '.$this->selectedTypeId);
-        /*$this->validate(['parameterName' => 'required']);
-        if (! $this->selectedTypeId) {
-            $this->dispatch('error', message: 'Тип товара не выбран!');
-            return;
-        }
-        */
         $this->validate([
-            'parameterNameRu' => 'required|string|max:255',
-            'parameterNameEn' => 'required|string|max:255',
-            'parameterNameAz' => 'required|string|max:255',
+            'parameterNameRu' => [
+                'required', 'string', 'max:255',
+                Rule::unique('parameters', 'name_ru')
+                    ->where(fn ($query) => $query->where('product_type_id', $this->selectedTypeId)),
+            ],
+            'parameterNameEn' => [
+                'required', 'string', 'max:255',
+                Rule::unique('parameters', 'name_en')
+                    ->where(fn ($query) => $query->where('product_type_id', $this->selectedTypeId)),
+            ],
+            'parameterNameAz' => [
+                'required', 'string', 'max:255',
+                Rule::unique('parameters', 'name_az')
+                    ->where(fn ($query) => $query->where('product_type_id', $this->selectedTypeId)),
+            ],
         ]);
-        if (! $this->selectedTypeId) {
+
+        if (!$this->selectedTypeId) {
             $this->dispatch('error', message: 'Тип товара не выбран!');
             return;
         }
@@ -218,9 +251,17 @@ class ProductTypeManager extends Component
 
     public function deleteParameter($paramId): void
     {
-        Parameter::find($paramId)?->delete();
+        $param = Parameter::with('parameterValues')->find($paramId);
+
+        if ($param && $param->parameterValues()->exists()) {
+            session()->flash('error', 'Нельзя удалить параметр, связанный с товарами.');
+            return;
+        }
+
+        $param?->delete();
         $this->manageParameters($this->selectedTypeId);
     }
+
 
     public function render()
     {

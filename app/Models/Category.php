@@ -34,7 +34,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Category whereParentId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Category whereProductTypeId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Category whereUpdatedAt($value)
- * @mixin \Eloquent
  */
 class Category extends Model
 {
@@ -43,7 +42,7 @@ class Category extends Model
 
     public function goods(): HasMany
     {
-        return $this->hasMany(Good::class, 'category_id'); // 'category_id' — имя внешнего ключа в таблице goods
+        return $this->hasMany(Goods::class, 'category_id'); // 'category_id' — имя внешнего ключа в таблице goods
     }
     public static function getOrderedCategories(): array
     {

@@ -18,6 +18,10 @@ return new class extends Migration
             $table->string('name_en')->nullable();
             $table->string('name_az')->nullable();
             $table->timestamps();
+
+            $table->unique(['product_type_id', 'name_ru']);
+            $table->unique(['product_type_id', 'name_en']);
+            $table->unique(['product_type_id', 'name_az']);
         });
     }
 

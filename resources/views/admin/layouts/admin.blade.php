@@ -46,6 +46,7 @@
 <script src="{{ asset('vendor/adminlte/plugins/jquery/jquery.min.js') }}"></script>
 @livewireScripts
 @stack('scripts')
+@stack('styles')
 
 @if (Route::currentRouteName() == 'admin.admin-categories' || Route::currentRouteName() == 'admin.admin-product-types')
     <script>

@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Categories;
 use App\Models\Category;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Illuminate\Validation\Rule;
 use Illuminate\Database\Eloquent\Collection;
 
 class CategoryManager extends Component
@@ -18,7 +19,7 @@ class CategoryManager extends Component
     public ?int $parent_id = null;
     public ?int $editId = null;
     public ?int $editParentId = null;
-    public string $editName;
+
     protected array $rules = [
         'name_ru' => 'required|string|max:255',
         'name_en' => 'required|string|max:255',
@@ -30,14 +31,43 @@ class CategoryManager extends Component
         'editParentId' => 'nullable|exists:categories,id',
     ];
 
+
+
     public function addCategory(): void
     {
         $this->validate([
-            'name_ru' => 'required|string|max:255',
-            'name_en' => 'required|string|max:255',
-            'name_az' => 'required|string|max:255',
+            'name_ru' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories')->where(fn($query) => $query->where('parent_id', $this->parent_id)),
+            ],
+            'name_en' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories')->where(fn($query) => $query->where('parent_id', $this->parent_id)),
+            ],
+            'name_az' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories')->where(fn($query) => $query->where('parent_id', $this->parent_id)),
+            ],
             'parent_id' => 'nullable|exists:categories,id',
         ]);
+
+        // Проверка глубины вложенности (до 3 уровней)
+        if ($this->parent_id) {
+            $parent = Category::find($this->parent_id);
+            if ($parent && $parent->parent_id) {
+                $grandParent = Category::find($parent->parent_id);
+                if ($grandParent && $grandParent->parent_id) {
+                    session()->flash('error', 'Нельзя создать категорию глубже 3 уровней.');
+                    return;
+                }
+            }
+        }
 
         Category::create([
             'name_ru' => $this->name_ru,
@@ -48,13 +78,18 @@ class CategoryManager extends Component
 
         $this->name_ru = $this->name_en = $this->name_az = '';
         $this->parent_id = null;
-
         session()->flash('success', 'Категория добавлена');
     }
 
     public function deleteCategory($id): void
     {
         $category = Category::query()->findOrFail($id);
+        // Проверка: есть ли дочерние категории
+        if ($category->children()->exists()) {
+            session()->flash('error', 'Невозможно удалить категорию, так как у неё есть дочерние категории.');
+            return;
+        }
+        // Проверка: привязаны ли товары
         if ($category->goods()->exists()) {
             session()->flash('error', 'Невозможно удалить категорию, к ней привязаны товары.');
             return;
@@ -62,6 +97,7 @@ class CategoryManager extends Component
         $category->delete();
         session()->flash('success', 'Категория успешно удалена');
     }
+
 
     public function editCategory($id): void
     {
@@ -73,6 +109,68 @@ class CategoryManager extends Component
         $this->editParentId = $category->parent_id;
         $this->dispatch('open-edit-category-modal');
     }
+
+
+
+    public function updateCategory(): void
+    {
+        $this->validate([
+            'editNameRu' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories')->where(fn($query) => $query->where('parent_id', $this->editParentId))
+                    ->ignore($this->editId),
+            ],
+            'editNameEn' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories')->where(fn($query) => $query->where('parent_id', $this->editParentId))
+                    ->ignore($this->editId),
+            ],
+            'editNameAz' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories')->where(fn($query) => $query->where('parent_id', $this->editParentId))
+                    ->ignore($this->editId),
+            ],
+            'editParentId' => 'nullable|exists:categories,id',
+        ]);
+
+        $category = Category::findOrFail($this->editId);
+
+        // Проверка глубины вложенности (до 3 уровней)
+        if ($this->editParentId) {
+            $parent = Category::find($this->editParentId);
+            if ($parent && $parent->parent_id) {
+                $grandParent = Category::find($parent->parent_id);
+                if ($grandParent && $grandParent->parent_id) {
+                    session()->flash('error', 'Нельзя создать категорию глубже 3 уровней.');
+                    return;
+                }
+            }
+        }
+
+        if ($this->editParentId == $this->editId || $this->isDescendant($category, $this->editParentId)) {
+            $this->addError('editParentId', 'Нельзя выбрать текущую категорию или её потомка в качестве родителя.');
+            return;
+        }
+
+        $category->update([
+            'name_ru' => $this->editNameRu,
+            'name_en' => $this->editNameEn,
+            'name_az' => $this->editNameAz,
+            'parent_id' => $this->editParentId ?: null,
+        ]);
+
+        $this->resetEdit();
+        $this->dispatch('close-edit-category-modal');
+        session()->flash('success', 'Категория обновлена');
+    }
+
+    /*
     public function updateCategory(): void
     {
         $this->validate([
@@ -97,7 +195,7 @@ class CategoryManager extends Component
         $this->dispatch('close-edit-category-modal');
         session()->flash('success', 'Категория обновлена');
     }
-
+*/
     protected function isDescendant(Category $category, $possibleParentId): bool
     {
         if (! $possibleParentId) {
@@ -119,9 +217,8 @@ class CategoryManager extends Component
     public function resetEdit(): void
     {
         $this->editId = null;
-        $this->editName = null;
         $this->editParentId = null;
-        $this->resetValidation(['editName', 'editParentId']);
+        $this->resetValidation(['editNameRu', 'editNameEn', 'editNameAz', 'editParentId']);
     }
 
     public function getCategoriesProperty(): Collection
