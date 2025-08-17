@@ -3,6 +3,8 @@ namespace App\Livewire\Admin\News;
 
 use App\Models\News;
 //use Illuminate\Support\Facades\Log;
+use App\Rules\TrixContentRequired;
+use Illuminate\Container\Attributes\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -32,29 +34,25 @@ class EditNews extends Component
     public $existingPhotos = [];
     public array $photoOrder = [];
     public array $photos = [];
-    protected $listeners = ['updateExistingPhotoOrder', 'refreshComponent' => '$refresh'];
+    protected array $rules = [];
+    public array $locales = [];
     public function mount(News $news): void
     {
+        $this->locales = config('app.locales');
+
         $this->news = $news;
         $this->existingPhotos = $news->images()->orderBy('sort_order')->get();
         $this->photoOrder = $this->existingPhotos->pluck('id')->toArray();
 
-        $this->title_az = $news->title_az;
-        $this->content_az = $news->content_az;
-        $this->title_ru = $news->title_ru;
-        $this->content_ru = $news->content_ru;
-        $this->title_en = $news->title_en;
-        $this->content_en = $news->content_en;
+        foreach ($this->locales as $lang => $name) {
+            $this->{"title_{$lang}"} = $news->{"title_{$lang}"};
+            $this->{"content_{$lang}"} = $news->{"content_{$lang}"};
+            $this->{"keywords_{$lang}"} = $news->{"keywords_{$lang}"};
+            $this->{"description_{$lang}"} = $news->{"description_{$lang}"};
+        }
         $this->youtube_link = $news->youtube_link;
-
-        $this->keywords_az = $news->keywords_az;
-        $this->keywords_ru = $news->keywords_ru;
-        $this->keywords_en = $news->keywords_en;
-
-        $this->description_az = $news->description_az;
-        $this->description_ru = $news->description_ru;
-        $this->description_en = $news->description_en;
     }
+
     #[On('updateExistingPhotoOrder')]
     public function updateExistingPhotoOrder(array $orderedIds): void
     {
@@ -90,29 +88,27 @@ class EditNews extends Component
     }
     public function update()
     {
-        $this->validate([
-            'news.title_az' => 'required', 'news.content_az' => 'required',
-            'news.title_ru' => 'required', 'news.content_ru' => 'required',
-            'news.title_en' => 'required', 'news.content_en' => 'required',
-            'news.youtube_link' => 'nullable|url',
-            'photos.*' => 'nullable|image|max:2048',
-        ]);
+        foreach ($this->locales as $lang => $name) {
+            $rules["content_{$lang}"] = [new \App\Rules\TrixContentRequired()];
+            $rules["title_{$lang}"] = 'required';
+            $rules["keywords_{$lang}"] = 'required';
+            $rules["description_{$lang}"] = 'required';
+        }
 
-        $this->news->title_az = $this->title_az;
-        $this->news->content_az = $this->content_az;
-        $this->news->title_ru = $this->title_ru;
-        $this->news->content_ru = $this->content_ru;
-        $this->news->title_en = $this->title_en;
-        $this->news->content_en = $this->content_en;
+        $rules['youtube_link'] = 'nullable|url';
+        $rules['photos.*'] = 'nullable|image|max:2048';
+
+        $this->validate($rules);
+
+        foreach ($this->locales as $lang => $name) {
+            \Log::info($this->news->{"title_{$lang}"});
+            $this->news->{"title_{$lang}"} = $this->{"title_{$lang}"};
+            $this->news->{"content_{$lang}"} = $this->{"content_{$lang}"};
+            $this->news->{"keywords_{$lang}"} = $this->{"keywords_{$lang}"};
+            $this->news->{"description_{$lang}"} = $this->{"description_{$lang}"};
+        }
+
         $this->news->youtube_link = $this->youtube_link;
-
-        $this->news->keywords_az = $this->keywords_az;
-        $this->news->keywords_ru = $this->keywords_ru;
-        $this->news->keywords_en = $this->keywords_en;
-        $this->news->description_az = $this->description_az;
-        $this->news->description_ru = $this->description_ru;
-        $this->news->description_en = $this->description_en;
-
         $this->news->save();
 
         $disk = Storage::disk('public');
@@ -155,6 +151,7 @@ class EditNews extends Component
             'sort_order' => $this->news->images()->count()
         ]);
     }
+
     #[Layout('admin.layouts.admin')]
     public function render()
     {

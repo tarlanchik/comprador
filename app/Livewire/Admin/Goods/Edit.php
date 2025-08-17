@@ -46,32 +46,31 @@ class Edit extends Component
     public array $categories = [];
     public array $orderedKeys = [];
     public Collection $existingPhotos;
+    public array $locales = [];
     public function mount(Goods $good): void
     {
+        $this->locales = config('app.locales');
         $this->good = $good;
         $this->good = $good->load(['images', 'category.productType', 'parameterValues']);
         $this->existingPhotos = $this->good->images->sortBy('sort_order');
         $this->photoOrder = $this->good->images->pluck('id')->toArray();
 
         $this->isEdit = true;
-        $this->name_ru = $good->name_ru;
-        $this->name_en = $good->name_en;
-        $this->name_az = $good->name_az;
-        $this->title_ru = $good->title_ru;
-        $this->title_en = $good->title_en;
-        $this->title_az = $good->title_az;
-        $this->keywords_ru = $good->keywords_ru;
-        $this->keywords_en = $good->keywords_en;
-        $this->keywords_az = $good->keywords_az;
-        $this->description_ru = $good->description_ru;
-        $this->description_en = $good->description_en;
-        $this->description_az = $good->description_az;
+
+        foreach ($this->locales as $lang => $label) {
+            $this->{"name_$lang"} = $good->{"name_$lang"};
+            $this->{"title_$lang"} = $good->{"title_$lang"};
+            $this->{"keywords_$lang"} = $good->{"keywords_$lang"};
+            $this->{"description_$lang"} = $good->{"description_$lang"};
+        }
+
         $this->price = $good->price;
         $this->old_price = $good->old_price;
         $this->count = $good->count;
         $this->youtube_link = $good->youtube_link;
         $this->category_id = $good->category_id;
-// Тип товара
+
+        // Тип товара
         $this->productTypeId = $good->category?->productType?->id;
         $this->parameters = [];
 
@@ -91,10 +90,9 @@ class Edit extends Component
                 $this->parameters[$paramId] = $existingValues[$paramId] ?? '';
             }
         }
-        // Категории
+      // Категории
         $this->categories = Category::getOrderedCategories();
     }
-
 
     public function updatedPhotos(): void
     {
@@ -161,16 +159,7 @@ class Edit extends Component
 
     public function save()
     {
-        $this->validate([
-            'name_ru' => 'required|string|max:255',
-            'name_en' => 'required|string|max:255',
-            'name_az' => 'required|string|max:255',
-            'title_az' => 'required|string|max:60',
-            'title_ru' => 'required|string|max:60',
-            'title_en' => 'required|string|max:60',
-            'description_ru' => 'required|string|max:160',
-            'description_en' => 'required|string|max:160',
-            'description_az' => 'required|string|max:160',
+        $rules = [
             'price' => 'required|numeric',
             'old_price' => 'nullable|numeric',
             'count' => 'required|numeric',
@@ -178,31 +167,40 @@ class Edit extends Component
             'youtube_link' => 'nullable|string|max:160',
             'category_id' => 'required|exists:categories,id',
             'photos.*' => 'image|max:2048',
-        ]);
+        ];
+
+        $validatedData = [];
+        $updateData = [];
+
+        // Динамическая валидация и сбор данных для обновления
+        foreach ($this->locales as $lang => $label) {
+            $rules["name_$lang"] = 'required|string|max:255';
+            $rules["title_$lang"] = 'required|string|max:60';
+            $rules["keywords_$lang"] = 'required|string|max:255';
+            $rules["description_$lang"] = 'required|string|max:160';
+
+            $updateData["name_$lang"] = $this->{"name_$lang"};
+            $updateData["title_$lang"] = $this->{"title_$lang"};
+            $updateData["keywords_$lang"] = $this->{"keywords_$lang"};
+            $updateData["description_$lang"] = $this->{"description_$lang"};
+        }
+
+        // Применяем динамические и статические правила валидации
+        $validatedData = $this->validate($rules);
+
+        // Добавляем остальные поля
+        $updateData['price'] = $this->price;
+        $updateData['old_price'] = $this->old_price;
+        $updateData['count'] = $this->count;
+        $updateData['youtube_link'] = $this->youtube_link;
+        $updateData['category_id'] = $this->category_id;
 
         $category = Category::find($this->category_id);
         if ($category && !$category->product_type_id) {
             $category->update(['product_type_id' => $this->productTypeId]);
         }
-        $this->good->update([
-            'name_ru' => $this->name_ru,
-            'name_en' => $this->name_en,
-            'name_az' => $this->name_az,
-            'title_ru' => $this->title_ru,
-            'title_en' => $this->title_en,
-            'title_az' => $this->title_az,
-            'keywords_ru' => $this->keywords_ru,
-            'keywords_en' => $this->keywords_en,
-            'keywords_az' => $this->keywords_az,
-            'description_ru' => $this->description_ru,
-            'description_en' => $this->description_en,
-            'description_az' => $this->description_az,
-            'price' => $this->price,
-            'old_price' => $this->old_price,
-            'count' => $this->count,
-            'youtube_link' => $this->youtube_link,
-            'category_id' => $this->category_id,
-        ]);
+
+        $this->good->update($updateData);
 
         foreach ($this->parameters as $paramId => $value) {
             try {

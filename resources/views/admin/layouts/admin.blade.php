@@ -40,11 +40,15 @@
     </main>
     @include('admin.partials.footer')
 </div>
+
+<script src="{{ asset('vendor/adminlte/plugins/jquery/jquery.min.js') }}"></script>
 <script src="{{ asset('vendor/adminlte/dist/js/popper.min.js') }}" crossorigin="anonymous"></script>
 <script src="{{ asset('vendor/adminlte/dist/js/bootstrap.min.js') }}" crossorigin="anonymous"></script>
 <script src="{{ asset('vendor/adminlte/dist/js/adminlte.js') }}"></script>
-<script src="{{ asset('vendor/adminlte/plugins/jquery/jquery.min.js') }}"></script>
+<script src="{{ asset('vendor/sortable/Sortable.min.js') }}"></script>
+
 @livewireScripts
+
 @stack('scripts')
 @stack('styles')
 

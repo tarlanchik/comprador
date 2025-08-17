@@ -59,7 +59,7 @@ class Create extends Component
 
     public array $parameters = [];
     public array $orderedKeys = [];
-
+    public array $locales = [];
 
     protected array $rules = [
         'photos' => 'required|array|max:10', // Чтобы при ошибке валидации не терялись фото
@@ -70,6 +70,7 @@ class Create extends Component
 
     public function mount(): void
     {
+        $this->locales = config('app.locales');
         $this->isEdit = false;
         $this->categories = Category::getOrderedCategories();
     }
@@ -100,7 +101,7 @@ class Create extends Component
             session()->flash('parameter_error', 'Пожалуйста, выберите шаблон товара.');
             return;
         }
-       $this->parameters = Parameter::where('product_type_id', $this->productTypeId)->pluck('name_ru', 'id')->mapWithKeys(fn ($name, $id) => [$id => ''])->toArray();
+        $this->parameters = Parameter::where('product_type_id', $this->productTypeId)->pluck('name_ru', 'id')->mapWithKeys(fn ($name, $id) => [$id => ''])->toArray();
     }
 
     #[On('updatePhotoOrder')]
@@ -125,16 +126,7 @@ class Create extends Component
 
     public function save()
     {
-        $this->validate([
-            'name_ru' => 'required|string|max:255',
-            'name_en' => 'required|string|max:255',
-            'name_az' => 'required|string|max:255',
-            'title_az' => 'required|string|max:60',
-            'title_ru' => 'required|string|max:60',
-            'title_en' => 'required|string|max:60',
-            'description_ru' => 'required|string|max:160',
-            'description_en' => 'required|string|max:160',
-            'description_az' => 'required|string|max:160',
+        $rules = [
             'price' => 'required|numeric',
             'old_price' => 'nullable|numeric',
             'count' => 'required|numeric',
@@ -142,8 +134,32 @@ class Create extends Component
             'youtube_link' => 'nullable|string|max:160',
             'category_id' => 'required|exists:categories,id',
             'photos.*' => 'image|max:2048',
-        ]);
+        ];
 
+        $updateData = [];
+
+        // Динамическая валидация и сбор данных для создания/обновления
+        foreach ($this->locales as $lang => $label) {
+            $rules["name_$lang"] = 'required|string|max:255';
+            $rules["title_$lang"] = 'required|string|max:60';
+            $rules["keywords_$lang"] = 'required|string|max:255';
+            $rules["description_$lang"] = 'required|string|max:160';
+
+            $updateData["name_$lang"] = $this->{"name_$lang"};
+            $updateData["title_$lang"] = $this->{"title_$lang"};
+            $updateData["keywords_$lang"] = $this->{"keywords_$lang"};
+            $updateData["description_$lang"] = $this->{"description_$lang"};
+        }
+
+        // Применяем динамические и статические правила валидации
+        $this->validate($rules);
+
+        // Добавляем остальные поля
+        $updateData['price'] = $this->price;
+        $updateData['old_price'] = $this->old_price;
+        $updateData['count'] = $this->count;
+        $updateData['youtube_link'] = $this->youtube_link;
+        $updateData['category_id'] = $this->category_id;
 
         // ✅ Обновляем product_type_id у категории, если он не задан
         $category = Category::find($this->category_id);
@@ -151,36 +167,9 @@ class Create extends Component
             $category->update(['product_type_id' => $this->productTypeId]);
         }
         // ✅ Создаём товар
-        $good = Goods::create([
-            'name_ru' => $this->name_ru,
-            'name_en' => $this->name_en,
-            'name_az' => $this->name_az,
+        $good = Goods::create($updateData);
 
-            'title_ru' => $this->title_ru,
-            'title_en' => $this->title_en,
-            'title_az' => $this->title_az,
-
-            'keywords_ru' => $this->keywords_ru,
-            'keywords_en' => $this->keywords_en,
-            'keywords_az' => $this->keywords_az,
-
-            'description_ru' => $this->description_ru,
-            'description_en' => $this->description_en,
-            'description_az' => $this->description_az,
-
-            'price' => $this->price,
-            'old_price' => $this->old_price,
-            'count' => $this->count,
-            'youtube_link' => $this->youtube_link,
-            'category_id' => $this->category_id,
-        ]);
         // ✅ Сохраняем параметры
-        foreach ($this->parameters as $paramId => $value) {
-            $good->parameterValues()->create([
-                'parameter_id' => $paramId,
-                'value' => $value,
-            ]);
-        }
         foreach ($this->parameters as $paramId => $value) {
             $good->parameterValues()->create([
                 'parameter_id' => $paramId,
@@ -200,7 +189,6 @@ class Create extends Component
 
         foreach ($this->photos as $index => $photo) {
             $imageName = uniqid() . '.' . $photo->getClientOriginalExtension();
-            // Сохраняем на диск public (Laravel сам создаёт поддиректории)
             $storedPath = $photo->storeAs($dir, $imageName, 'public');
             if ($storedPath) {
                 $good->images()->create([

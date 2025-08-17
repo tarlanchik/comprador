@@ -28,7 +28,7 @@
                         <input type="text" wire:model="name" class="form-control" placeholder="Новый тип товара">
                     </div>
                     <div class="col-auto">
-                        <button type="submit" class="btn btn-primary">Добавить</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-bag-plus-fill"></i> Добавить</button>
                     </div>
                 </form>
                     <ul class="list-group mb-4">
@@ -67,7 +67,7 @@
                                 <input type="text" wire:model.defer="parameterNameAz" class="form-control" placeholder="Название (AZ)">
                             </div>
                             <div class="col-md-3">
-                                <button type="submit" class="btn btn-success w-100">Добавить</button>
+                                <button type="submit" class="btn btn-success w-100"><i class="bi bi-plus-circle"></i> Добавить</button>
                             </div>
                         </form>
                     </fieldset>
@@ -116,8 +116,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="button" wire:click="updateParameter" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-octagon"></i> Отмена</button>
+                    <button type="button" wire:click="updateParameter" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Обновить</button>
                 </div>
             </div>
         </div>
@@ -136,8 +136,8 @@
                         @error('editTypeName') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                     <div class="modal-footer">
-                        <button type="button" wire:click="$set('editTypeId', null)" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                        <button type="button" wire:click="$set('editTypeId', null)" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-octagon"></i> Отмена</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Обновить</button>
                     </div>
                 </form>
             </div>

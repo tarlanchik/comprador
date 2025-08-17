@@ -2,6 +2,8 @@
 namespace App\Livewire\Admin\News;
 
 use App\Models\News;
+use App\Rules\TrixContentRequired;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -9,6 +11,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Storage;
+
 
 class CreateNews extends Component
 {
@@ -30,15 +33,14 @@ class CreateNews extends Component
     public array $photoOrder = [];
     public array $photos = [];
     public News $news;
-
-    protected array $rules = [
-        'photos' => 'required|array|max:10',
-        'photos.*' => 'image|max:10240',
-    ];
+    protected array $rules = [];
+    public array $locales = [];
     public function mount($news = null): void
     {
+        $this->locales = config('app.locales');
         $this->news = $news ?? new News();
     }
+
     public function updatedPhotos(): void
     {
         if (count($this->photos) > 10) {
@@ -67,36 +69,29 @@ class CreateNews extends Component
         $this->photoOrder = array_keys($this->photos);
     }
 
-
     public function save()
     {
-        $this->validate([
-            'title_az' => 'required', 'content_az' => 'required',
-            'title_ru' => 'required', 'content_ru' => 'required',
-            'title_en' => 'required', 'content_en' => 'required',
-            'youtube_link' => 'nullable|url',
-            'photos.*' => 'nullable|image|max:2048',
-        ]);
+        foreach ($this->locales as $lang => $name) {
+            $rules["content_{$lang}"] = [new \App\Rules\TrixContentRequired()];
+            $rules["title_{$lang}"] = 'required|string|max:60';
+            $rules["keywords_{$lang}"] = 'required|string|max:255';
+            $rules["description_{$lang}"] = 'required|string|max:160';
+        }
+        $rules['youtube_link'] = 'nullable|url';
+        $rules['photos.*'] = 'nullable|image|max:2048';
 
-        $news = News::create([
-            'title_az' => $this->title_az,
-            'content_az' => $this->content_az,
-            'title_ru' => $this->title_ru,
-            'content_ru' => $this->content_ru,
-            'title_en' => $this->title_en,
-            'content_en' => $this->content_en,
-            'keywords_az' => $this->keywords_az,
-            'keywords_ru' => $this->keywords_ru,
-            'keywords_en' => $this->keywords_en,
-            'description_az' => $this->description_az,
-            'description_ru' => $this->description_ru,
-            'description_en' => $this->description_en,
-            'youtube_link' => $this->youtube_link,
-        ]);
+        $this->validate($rules);
+        foreach ($this->locales as $lang => $name) {
+            $newsData["title_{$lang}"] = $this->{"title_{$lang}"};
+            $newsData["content_{$lang}"] = $this->{"content_{$lang}"};
+            $newsData["keywords_{$lang}"] = $this->{"keywords_{$lang}"};
+            $newsData["description_{$lang}"] = $this->{"description_{$lang}"};
+        }
+        $newsData['youtube_link'] = $this->youtube_link;
+        $news = News::create($newsData);
 
         $disk = Storage::disk('public');
         $dir = 'news/' . $news->id;
-
 
         if (!$disk->exists($dir)) {
             $disk->makeDirectory($dir);
@@ -134,6 +129,8 @@ class CreateNews extends Component
     #[Layout('admin.layouts.admin')]
     public function render()
     {
-        return view('livewire.admin.news.create-edit');
+        return view('livewire.admin.news.create-edit', [
+            'existingPhotos' => '',
+        ]);
     }
 }

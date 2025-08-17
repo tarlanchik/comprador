@@ -10,10 +10,8 @@
                     Поиск товаров
                 </legend>
                 <div class="d-flex mb-3">
-                    <input type="text" wire:model.defer="search" placeholder="Поиск..." class="form-control me-2" />
-                    <button wire:click="$refresh" class="btn btn-primary">
-                        Поиск
-                    </button>
+                    <input type="text" wire:model.defer="search" placeholder="Поиск по заголовку..." class="form-control me-2" />
+                    <button wire:click="$refresh" class="btn btn-primary"> Поиск</button>
                 </div>
             </fieldset>
         </div>
@@ -26,12 +24,12 @@
                         <thead class="table-secondary">
                         <tr>
                             <!--<th scope="col">#ID</th>-->
-                            <th scope="col">Название</th>
+                            <th scope="col" class="text-start">Название</th>
                             <th scope="col">Категория</th>
                             <th scope="col">Цена</th>
                             <th scope="col">Кол-во</th>
                             <!-- <th scope="cosl">Создан</th> -->
-                            <th scope="col">Действия</th>
+                            <th scope="col" class="text-end">Действия</th>
                         </tr>
                         </thead>
                         <tbody>

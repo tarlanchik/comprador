@@ -33,12 +33,12 @@
     <form wire:submit.prevent="save" enctype="multipart/form-data">
         <div class="card">
             <div class="card-header">
-                <h5 class="modal-title">Добавление товара</h5>
+                <h5 class="modal-title">{{ $isEdit ? 'Редактирование товара' : 'Добавление товара' }}</h5>
             </div>
             <div class="card-body">
 
                 <ul class="nav nav-tabs mb-3" id="langTabs" role="tablist">
-                    @foreach(['ru' => 'Русский', 'en' => 'English', 'az' => 'Azərbaycanca'] as $lang => $label)
+                    @foreach($locales as $lang=>$label)
                         <li class="nav-item" role="presentation">
                             <button class="nav-link @if($loop->first) active @endif" id="{{ $lang }}-tab" data-bs-toggle="tab" data-bs-target="#{{ $lang }}" type="button" role="tab">
                                 {{ $label }}
@@ -48,29 +48,29 @@
                 </ul>
 
                 <div class="tab-content mb-4">
-                    @foreach(['ru' => 'Русский', 'en' => 'English', 'az' => 'Azərbaycanca'] as $lang => $label)
+                    @foreach($locales as $lang=>$label)
                         <div class="tab-pane fade @if($loop->first) show active @endif" id="{{ $lang }}" role="tabpanel">
                             <div class="mb-3">
                                 <label class="form-label">Название ({{ $label }})</label>
-                                <input type="text" wire:model.defer="name_{{ $lang }}" class="form-control">
+                                <input type="text" wire:model="name_{{ $lang }}" class="form-control">
                                 @error("name_$lang") <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Заголовок ({{ $label }})</label>
-                                <input type="text" wire:model.defer="title_{{ $lang }}" class="form-control">
+                                <input type="text" wire:model="title_{{ $lang }}" class="form-control">
                                 @error("title_$lang") <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Ключевые слова ({{ $label }})</label>
-                                <input type="text" wire:model.defer="keywords_{{ $lang }}" class="form-control">
+                                <input type="text" wire:model="keywords_{{ $lang }}" class="form-control">
                                 @error("keywords_$lang") <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Описание ({{ $label }})</label>
-                                <textarea wire:model.defer="description_{{ $lang }}" class="form-control" rows="3"></textarea>
+                                <textarea wire:model="description_{{ $lang }}" class="form-control" rows="3"></textarea>
                                 @error("description_$lang") <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
                         </div>
@@ -80,37 +80,47 @@
                 <div class="row mb-3">
                     <div class="col-md-4">
                         <label class="form-label">Цена</label>
-                        <input type="number" wire:model.defer="price" step="0.01" class="form-control">
+                        <input type="number" wire:model="price" step="0.01" class="form-control">
                         @error('price') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label">Старая цена</label>
-                        <input type="number" wire:model.defer="old_price" step="0.01" class="form-control">
+                        <input type="number" wire:model="old_price" step="0.01" class="form-control">
                         @error('old_price') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label">Количество</label>
-                        <input type="number" wire:model.defer="count" class="form-control">
+                        <input type="number" wire:model="count" class="form-control">
                         @error('count') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Ссылка на YouTube</label>
-                    <input type="url" wire:model.defer="youtube_link" class="form-control">
+                    <input type="url" wire:model="youtube_link" class="form-control">
                     @error('youtube_link') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Категория</label>
-                    <select wire:model.defer="category_id" class="form-select">
+                    <select wire:model="category_id" class="form-select">
                         <option value="">Выберите категорию</option>
                         @foreach($categories as $cat)
                             <option value="{{ $cat->id }}">
-                                {{ str_repeat('➤ ', $cat->level) . $cat->name_ru }}
+                                {{ $cat->name_ru }}
                             </option>
+                            @foreach($cat->children as $child)
+                                <option value="{{ $child->id }}">
+                                    {{ '⇒ ' . $child->name_ru }}
+                                </option>
+                                @foreach($child->children as $grandchild)
+                                    <option value="{{ $grandchild->id }}">
+                                        {{ '⇒⇒ ' . $grandchild->name_ru }}
+                                    </option>
+                                @endforeach
+                            @endforeach
                         @endforeach
                     </select>
                     @error('category_id') <small class="text-danger">{{ $message }}</small> @enderror
@@ -146,71 +156,66 @@
                         @foreach($parameters as $paramId => $value)
                             <div class="mb-3">
                                 <label for="param_{{ $paramId }}" class="form-label">{{ \App\Models\Parameter::find($paramId)?->name_ru }}</label>
-                                <input type="text" wire:model.defer="parameters.{{ $paramId }}" id="param_{{ $paramId }}" class="form-control">
+                                <input type="text" wire:model="parameters.{{ $paramId }}" id="param_{{ $paramId }}" class="form-control">
                             </div>
                         @endforeach
                     </div>
                 @endif
 
-                        <div class="mb-3">
-                            <label class="form-label">Фотографии (до 10 шт.)</label>
-                            <input type="file" wire:model="photos" multiple class="form-control">
-                            <small class="form-text text-muted">Вы можете загрузить до 10 изображений.</small>
-                        </div>
+                <div class="mb-3">
+                    <label class="form-label">Фотографии (до 10 шт.)</label>
+                    <input type="file" wire:model="photos" multiple class="form-control">
+                    <small class="form-text text-muted">Вы можете загрузить до 10 изображений.</small>
+                </div>
 
                 @error('photos')
-                    <div class="text-danger mt-2 text-sm">{{ $message }}</div>
+                <div class="text-danger mt-2 text-sm">{{ $message }}</div>
                 @enderror
 
-                        {{-- Существующие фото --}}
-                        @if(isset($existingPhotos) && count($existingPhotos) > 0)
-                            <h5 class="mt-4">Загруженные фотографии</h5>
-                            <div x-data="sortableComponent">
-                                <ul class="list-group mt-3" id="existingPhotosList">
-                                    @foreach($existingPhotos as $photo)
-                                        <li class="handle list-group-item d-flex align-items-center gap-3" data-key="{{ $photo->id }}">
-                                            <span style="font-size: 20px;">⇅</span>
-                                            <img alt="" src="{{ asset($photo->image_path) }}" width="100" class="img-thumbnail">
-                                            <span class="flex-grow-1">Фото #{{ $loop->iteration }}</span>
-                                            <button type="button" wire:click="deleteExistingPhoto({{ $photo->id }})" class="btn btn-sm btn-outline-danger">Удалить</button>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
-
-                        {{-- Новые фото --}}
-                        @if(count($photos) > 0)
-                            <h5 class="mt-4">Новые фотографии</h5>
-                            <div x-data="sortableComponent">
-                                <ul class="list-group mt-3" id="newPhotosList">
-                                    @foreach ($photos as $key => $photo)
-                                        <li class="handle list-group-item d-flex align-items-center gap-3" data-key="{{ $key }}">
-                                            <span style="font-size: 20px;">⇅</span>
-                                            <img alt="" src="{{ $photo->temporaryUrl() }}" width="100" class="img-thumbnail">
-                                            <span class="flex-grow-1">Фото {{ $loop->iteration }}</span>
-                                            <button wire:click="removePhoto({{ $key }})" class="btn btn-sm btn-outline-danger">Удалить</button>
-                                        </li>
-                                   @endforeach
-                                </ul>
-                            </div>
-                        @endif
+                {{-- Существующие фото --}}
+                @if(isset($existingPhotos) && count($existingPhotos) > 0)
+                    <h5 class="mt-4">Загруженные фотографии</h5>
+                    <div x-data="sortableComponent">
+                        <ul class="list-group mt-3" id="existingPhotosList">
+                            @foreach($existingPhotos as $photo)
+                                <li class="handle list-group-item d-flex align-items-center gap-3" data-key="{{ $photo->id }}">
+                                    <span style="font-size: 20px;">⇅</span>
+                                    <img alt="" src="{{ asset($photo->image_path) }}" width="100" class="img-thumbnail">
+                                    <span class="flex-grow-1">Фото #{{ $loop->iteration }}</span>
+                                    <button type="button" wire:click="deleteExistingPhoto({{ $photo->id }})" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                </li>
+                            @endforeach
+                        </ul>
                     </div>
-                </div>
-                <div class="card-footer">
-                    <button type="submit" class="btn btn-success">{{ $isEdit ? 'Сохранить изменения' : 'Добавить' }}</button>
-                </div>
+                @endif
 
+                {{-- Новые фото --}}
+                @if(count($photos) > 0)
+                    <h5 class="mt-4">Новые фотографии</h5>
+                    <div x-data="sortableComponent">
+                        <ul class="list-group mt-3" id="newPhotosList">
+                            @foreach ($photos as $key => $photo)
+                                <li class="handle list-group-item d-flex align-items-center gap-3" data-key="{{ $key }}">
+                                    <span style="font-size: 20px;">⇅</span>
+                                    <img alt="" src="{{ $photo->temporaryUrl() }}" width="100" class="img-thumbnail">
+                                    <span class="flex-grow-1">Фото {{ $loop->iteration }}</span>
+                                    <button wire:click="removePhoto({{ $key }})" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="mt-4 text-end">
+                <button type="submit" class="btn btn-success">{{ $isEdit ? 'Сохранить изменения' : 'Добавить' }}</button>
+            </div>
+        </div>
     </form>
-
 </div>
 
-
-
-
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-
     <script>
         document.addEventListener("alpine:init", () => {
             Alpine.data("sortableComponent", () => ({
