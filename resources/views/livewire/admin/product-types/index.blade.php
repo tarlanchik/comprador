@@ -57,20 +57,18 @@
                     <fieldset class="border rounded p-3 mb-4">
                         <legend class="float-none w-auto px-2"> Добавить новый параметр для типа товара: {{ $selectedTypeName ?? 'Неизвестный тип' }}</legend>
                         <form wire:submit.prevent="addParameter" class="row g-2 align-items-center mb-3">
+                            @foreach($locales as $lang=>$label)
+                                @php $lang = ucfirst($lang) @endphp
                             <div class="col-md-3">
-                                <input type="text" wire:model.defer="parameterNameRu" class="form-control" placeholder="Название (RU)">
+                                <input type="text" wire:model.defer="parameterName{{$lang}}" class="form-control" placeholder="Название ({{$label}})">
                             </div>
-                            <div class="col-md-3">
-                                <input type="text" wire:model.defer="parameterNameEn" class="form-control" placeholder="Название (EN)">
-                            </div>
-                            <div class="col-md-3">
-                                <input type="text" wire:model.defer="parameterNameAz" class="form-control" placeholder="Название (AZ)">
-                            </div>
+                            @endforeach
                             <div class="col-md-3">
                                 <button type="submit" class="btn btn-success w-100"><i class="bi bi-plus-circle"></i> Добавить</button>
                             </div>
                         </form>
                     </fieldset>
+                    @if(count($parameterList) > 0)
                     <fieldset class="border rounded p-3 mb-4 mt-5">
                         <legend class="float-none w-auto px-2"> Список параметров для типа товаров: {{ $selectedTypeName ?? 'Неизвестный тип' }}</legend>
                         <ul class="list-group">
@@ -85,6 +83,7 @@
                             @endforeach
                         </ul>
                     </fieldset>
+                    @endif
                 </div>
             </div>
         @endif
@@ -99,21 +98,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
                 </div>
                 <div class="modal-body">
+                    @foreach($locales as $lang=>$label)
+                        @php $lang = ucfirst($lang) @endphp
                     <div class="mb-3">
-                        <label class="form-label">Название (RU)</label>
-                        <input type="text" wire:model.defer="editingParameterNameRu" class="form-control">
-                        @error('editingParameterNameRu') <small class="text-danger">{{ $message }}</small> @enderror
+                        <label class="form-label">Название ({{$label}})</label>
+                        <input type="text" wire:model.defer="editingParameterName{{$lang}}" class="form-control">
+                        @error('editingParameterName$lang') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Название (EN)</label>
-                        <input type="text" wire:model.defer="editingParameterNameEn" class="form-control">
-                        @error('editingParameterNameEn') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Название (AZ)</label>
-                        <input type="text" wire:model.defer="editingParameterNameAz" class="form-control">
-                        @error('editingParameterNameAz') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
+                    @endforeach
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-octagon"></i> Отмена</button>

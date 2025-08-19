@@ -3,60 +3,85 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-/**
- * @property int $id
- * @property string $title_az
- * @property string $content_az
- * @property string $title_ru
- * @property string $content_ru
- * @property string $title_en
- * @property string $content_en
- * @property string|null $keywords_az
- * @property string|null $keywords_ru
- * @property string|null $keywords_en
- * @property string|null $description_az
- * @property string|null $description_ru
- * @property string|null $description_en
- * @property string|null $youtube_link
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\NewsImage> $images
- * @property-read int|null $images_count
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereContentAz($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereContentEn($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereContentRu($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereDescriptionAz($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereDescriptionEn($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereDescriptionRu($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereKeywordsAz($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereKeywordsEn($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereKeywordsRu($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereTitleAz($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereTitleEn($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereTitleRu($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News whereYoutubeLink($value)
- * @mixin \Eloquent
- */
 class News extends Model
 {
     protected $fillable = [
+        'title', 'excerpt', 'content', 'image', 'slug',
+        'author_id', 'published_at', 'views',
         'title_az', 'content_az', 'title_ru', 'content_ru', 'title_en', 'content_en',
         'keywords_az', 'keywords_ru', 'keywords_en',
         'description_az', 'description_ru', 'description_en',
-        'youtube_link'
+        'youtube_link', 'featured_image', 'reading_time'
     ];
 
+    protected $casts = [
+        'published_at' => 'datetime',
+    ];
+
+    // Author relationship
+    public function author(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'author_id');
+    }
+
+    // Category relationship - THIS WAS MISSING!
+   public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    // Tags relationship - THIS WAS ALSO MISSING!
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'news_tags');
+    }
+
+    // Comment relationships
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function approvedComments(): HasMany
+    {
+        return $this->hasMany(Comment::class)
+            ->where('approved', true)
+            ->whereNull('parent_id')
+            ->with(['user', 'replies', 'likes'])
+            ->latest();
+    }
+
+    public function featuredComments(): HasMany
+    {
+        return $this->hasMany(Comment::class)
+            ->where('approved', true)
+            ->where('is_featured', true)
+            ->with(['user', 'likes'])
+            ->latest();
+    }
+
+    public function latestComment(): BelongsTo
+    {
+        return $this->belongsTo(Comment::class, 'last_commented_at');
+    }
+
+    public function getCommentsCountAttribute(): int
+    {
+        return $this->comments()->where('approved', true)->count();
+    }
+
+    public function canComment(): bool
+    {
+        return $this->comments_enabled && $this->published_at <= now();
+    }
+
+    // Images relationship
     public function images(): HasMany
     {
         return $this->hasMany(NewsImage::class)->orderBy('sort_order');
     }
 }
-

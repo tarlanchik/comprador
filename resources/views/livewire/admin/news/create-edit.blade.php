@@ -21,7 +21,7 @@
                             :class="{ 'active': activeTab === '{{ $lang }}' }"
                             x-on:click.prevent="activeTab = '{{ $lang }}'"
                             id="tab-{{ $lang }}" type="button" role="tab">
-                        {{ mb_strtoupper($name) }}
+                        {{ $name }}
                     </button>
                 </li>
             @endforeach
@@ -32,24 +32,24 @@
             @foreach($locales as $lang=>$name)
                 <div x-show="activeTab === '{{ $lang }}'" id="content-{{ $lang }}" role="tabpanel">
                     <div class="mb-3">
-                        <label class="form-label">Title ({{ mb_strtoupper($name) }})</label>
+                        <label class="form-label">Title ({{ $name}})</label>
                         <input type="text" class="form-control" wire:model="title_{{ $lang }}">
                         @error('title_'.$lang)<div class="text-danger">{{ $message }}</div>@enderror
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Keywords ({{ mb_strtoupper($name) }})</label>
+                        <label class="form-label">Keywords ({{ $name }})</label>
                         <input type="text" class="form-control" wire:model="keywords_{{ $lang }}">
                         @error('keywords_'.$lang)<div class="text-danger">{{ $message }}</div>@enderror
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Description ({{ mb_strtoupper($name) }})</label>
+                        <label class="form-label">Description ({{ $name }})</label>
                         <textarea class="form-control" rows="3" wire:model="description_{{ $lang }}"></textarea>
                         @error('description_'.$lang)<div class="text-danger">{{ $message }}</div>@enderror
                     </div>
                     {{-- Content --}}
                     @php $contentField = "content_$lang"; @endphp
                     <div class="mb-3" wire:ignore>
-                        <label class="form-label">Content ({{ mb_strtoupper($name) }})</label>
+                        <label class="form-label">Content ({{ $name }})</label>
                         <input id="{{ $contentField }}" type="hidden" wire:model.live="{{ $contentField }}">
                         <trix-editor input="{{ $contentField }}" x-on:trix-change="$wire.set('{{ $contentField }}', $event.target.value)"></trix-editor>
                         @error($contentField)<div class="text-danger">{{ $message }}</div>@enderror

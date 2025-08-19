@@ -34,9 +34,10 @@ class ProductTypeManager extends Component
     public string $editingParameterNameRu = '';
     public string $editingParameterNameEn = '';
     public string $editingParameterNameAz = '';
-
+    public array $locales = [];
     public function mount(): void
     {
+        $this->locales = config('app.locales');
         $this->loadTypes();
     }
 

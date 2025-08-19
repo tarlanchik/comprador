@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom mb-4">
     <div class="container">
-        <a class="navbar-brand" href="{{ route('dashboard') }}">
+        <a class="navbar-brand" href="{{ route('home') }}">
             <!-- Можно вставить лого сюда -->
             {{ config('app.name', 'Laravel') }}
         </a>
@@ -13,9 +13,9 @@
             <!-- Левая часть меню -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a href="{{ route('dashboard') }}"
-                       class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                        {{ __('Dashboard') }}
+                    <a href="{{ route('home') }}"
+                       class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">
+                        {{ __('home') }}
                     </a>
                 </li>
                 <li class="nav-item"><a href="/admin/goods" class="nav-link active">Goods</a></li>
@@ -29,7 +29,7 @@
                 <li class="nav-item dropdown">
                     <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                        aria-haspopup="true" aria-expanded="false" v-pre>
-                        {{ Auth::user()->name }}
+                        {{ Auth::check() ? Auth::user()->name : 'Гость' }}
                     </a>
 
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">

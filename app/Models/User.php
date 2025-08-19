@@ -4,9 +4,10 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
+use Illuminate\Support\Facades\Storage;
 /**
  * @property int $id
  * @property string $name
@@ -34,6 +35,53 @@ use Illuminate\Notifications\Notifiable;
  */
 class User extends Authenticatable
 {
+    /*comment area*/
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function approvedComments(): HasMany
+    {
+        return $this->hasMany(Comment::class)->where('approved', true);
+    }
+
+    public function commentLikes(): HasMany
+    {
+        return $this->hasMany(CommentLike::class);
+    }
+
+    public function commentReports(): HasMany
+    {
+        return $this->hasMany(CommentReport::class);
+    }
+
+    public function getCommentsCountAttribute(): int
+    {
+        return $this->approvedComments()->count();
+    }
+
+    public function canComment(): bool
+    {
+        // Rate limiting: max 10 comments per hour
+        $recentComments = $this->comments()
+            ->where('created_at', '>=', now()->subHour())
+            ->count();
+
+        return $recentComments < 10;
+    }
+
+    public function getAvatarUrlAttribute(): string
+    {
+        if ($this->avatar) {
+            return Storage::url($this->avatar);
+        }
+
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
+    }
+    /*comment area*/
+
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
@@ -46,6 +94,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        /*comments area*/
+        'avatar',
+        'bio',
     ];
 
     /**

@@ -23,6 +23,11 @@ return new class extends Migration
             $table->text('description_ru')->nullable();
             $table->text('description_en')->nullable();
             $table->string('youtube_link')->nullable();
+            $table->unsignedBigInteger('views')->default(0);
+            $table->unsignedBigInteger('author_id')->default(1);
+            $table->unsignedBigInteger('category_id')->default(1);
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('set null');
+            $table->foreignId('author_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
         });

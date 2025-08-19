@@ -24,10 +24,27 @@ use App\Livewire\Public\About;
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\SetLocale;
+use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 
 // SEO Routes (outside middleware to avoid duplicate application)
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
+
+
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('comments', AdminCommentController::class);
+    Route::post('/comments/bulk-action', [AdminCommentController::class, 'bulkAction'])->name('comments.bulk-action');
+    Route::post('/comments/{comment}/approve', [AdminCommentController::class, 'approve'])->name('comments.approve');
+    Route::post('/comments/{comment}/reject', [AdminCommentController::class, 'reject'])->name('comments.reject');
+    Route::post('/comments/{comment}/feature', [AdminCommentController::class, 'feature'])->name('comments.feature');
+    Route::post('/comments/{comment}/unfeature', [AdminCommentController::class, 'unfeature'])->name('comments.unfeature');
+
+    Route::get('/comment-reports', [AdminCommentController::class, 'reports'])->name('comment-reports.index');
+    Route::post('/comment-reports/{report}/resolve', [AdminCommentController::class, 'resolveReport'])->name('comment-reports.resolve');
+    Route::delete('/comment-reports/{report}', [AdminCommentController::class, 'dismissReport'])->name('comment-reports.dismiss');
+});
+
 
 //Route::middleware(SetLocale::class)->group(function () {
 
@@ -43,7 +60,7 @@ Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
     Route::get('/news', NewsIndex::class)->name('news.index');
     Route::get('/news/{news}', NewsDetail::class)->name('news.show');
 
-    // Other Pages
+ // Other Pages
     Route::get('/cart', Cart::class)->name('cart');
     Route::get('/about', About::class)->name('about');
     Route::get('/contact', Contact::class)->name('contact');
