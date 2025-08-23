@@ -220,7 +220,7 @@
 
                                     <!-- Action Buttons -->
                                     <div class="d-flex gap-2 justify-content-center">
-                                        <a href="{{ route('products.show', $product->id) }}" class="btn btn-outline-primary flex-grow-1">
+                                        <a href="{{ route('products.show',['lang' => app()->getLocale(), 'product' => $product->id]) }}" class="btn btn-outline-primary flex-grow-1">
                                             <i class="bi bi-eye"></i> View Details
                                         </a>
                                         <button

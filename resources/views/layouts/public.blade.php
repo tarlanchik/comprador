@@ -338,7 +338,7 @@
 <div id="header-container">
     <div class="container">
         <div id="header-logo-container">
-            <a href="{{ route('home') }}">
+            <a href="{{ route('home', ['lang' => app()->getLocale()]) }}">
                 <img id="header-logo" src="{{ asset('img/logo.jpg') }}" alt="Comprador shop">
             </a>
         </div>
@@ -348,7 +348,7 @@
                 <div class="col-auto">
                     <div class="d-flex flex-wrap justify-content-center">
                         @foreach($categories ?? [] as $category)
-                            <a href="{{ route('products.category', $category->id) }}" class="header-element">
+                            <a href="{{ route('products.category', ['lang' => app()->getLocale(), 'categoryId' => $category->id]) }}" class="header-element">
                                 <div class="header-element-text">{{ $category->{'name_' . app()->getLocale()} }}</div>
                             </a>
                         @endforeach
@@ -360,16 +360,16 @@
             <div class="row justify-content-center mt-3">
                 <div class="col-auto">
                     <div class="d-flex flex-wrap justify-content-center">
-                        <a href="{{ route('about') }}" class="header-element">
+                        <a href="{{ route('about', ['lang' => app()->getLocale()]) }}" class="header-element">
                             <div class="header-element-text">About</div>
                         </a>
-                        <a href="{{ route('news.index') }}" class="header-element">
+                        <a href="{{ route('news.index', ['lang' => app()->getLocale()]) }}" class="header-element">
                             <div class="header-element-text">News</div>
                         </a>
-                        <a href="{{ route('contact') }}" class="header-element">
+                        <a href="{{ route('contact', ['lang' => app()->getLocale()]) }}" class="header-element">
                             <div class="header-element-text">Contact</div>
                         </a>
-                        <a href="{{ route('cart') }}" class="header-element">
+                        <a href="{{ route('cart', ['lang' => app()->getLocale()]) }}" class="header-element">
                             <div class="header-element-text">
                                 <i class="bi bi-cart"></i> Cart
                                 <span class="badge bg-primary ms-1" id="cart-count">0</span>
@@ -385,7 +385,7 @@
 <!-- Mobile Header -->
 <div class="mobile-header">
     <div class="mobile-header-content">
-        <a href="{{ route('home') }}">
+        <a href="{{ route('home', ['lang' => app()->getLocale()]) }}">
             <img src="{{ asset('/img/logo.jpg') }}" alt="Comprador shop" style="height: 40px;">
         </a>
         <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
@@ -395,7 +395,7 @@
 
     <div class="mobile-menu" id="mobileMenu">
         @foreach($categories ?? [] as $category)
-            <a href="{{ route('products.category', $category->id) }}">{{ $category->{'name_' . app()->getLocale()} }}</a>
+            <a href="{{ route('products.category', ['lang' => app()->getLocale(), 'categoryId' => $category->id])}}">{{ $category->{'name_' . app()->getLocale()} }}</a>
         @endforeach
         <hr style="border-color: #333; margin: 10px 0;">
         <a href="{{ route('about') }}">About</a>
@@ -420,7 +420,7 @@
                 <div class="footer-title">Products</div>
                 @foreach($categories ?? [] as $category)
                     @if($loop->index < 5)
-                        <a href="{{ route('products.category', $category->id) }}" class="footer-link">
+                        <a href="{{ route('products.category', ['lang' => app()->getLocale(), 'categoryId' => $category->id]) }}" class="footer-link">
                             {{ $category->{'name_' . app()->getLocale()} }}
                         </a>
                     @endif

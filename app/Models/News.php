@@ -2,45 +2,45 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasLocalizedColumns;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+//use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class News extends Model
 {
+    use HasLocalizedColumns;
+
     protected $fillable = [
-        'title', 'excerpt', 'content', 'image', 'slug',
-        'author_id', 'published_at', 'views',
-        'title_az', 'content_az', 'title_ru', 'content_ru', 'title_en', 'content_en',
+        'title_az', 'title_ru', 'title_en',
+        'content_az', 'content_ru', 'content_en',
         'keywords_az', 'keywords_ru', 'keywords_en',
         'description_az', 'description_ru', 'description_en',
-        'youtube_link', 'featured_image', 'reading_time'
+        'youtube_link', 'views', 'author_id', 'category_id','slug',
     ];
 
     protected $casts = [
-        'published_at' => 'datetime',
+        'views' => 'integer',
+       // 'images' => 'array',
     ];
 
-    // Author relationship
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
     }
 
-    // Category relationship - THIS WAS MISSING!
-   public function category(): BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
 
-    // Tags relationship - THIS WAS ALSO MISSING!
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'news_tags');
     }
 
-    // Comment relationships
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
@@ -64,11 +64,6 @@ class News extends Model
             ->latest();
     }
 
-    public function latestComment(): BelongsTo
-    {
-        return $this->belongsTo(Comment::class, 'last_commented_at');
-    }
-
     public function getCommentsCountAttribute(): int
     {
         return $this->comments()->where('approved', true)->count();
@@ -76,10 +71,11 @@ class News extends Model
 
     public function canComment(): bool
     {
-        return $this->comments_enabled && $this->published_at <= now();
+        return property_exists($this, 'comments_enabled')
+            ? $this->comments_enabled
+            : true;
     }
 
-    // Images relationship
     public function images(): HasMany
     {
         return $this->hasMany(NewsImage::class)->orderBy('sort_order');

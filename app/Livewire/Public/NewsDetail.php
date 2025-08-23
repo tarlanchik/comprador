@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Public;
 
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use App\Models\News;
 use App\Models\Comment;
@@ -20,6 +21,8 @@ class NewsDetail extends Component
     public $replyTo = null;
     public string $replyContent = '';
     public bool $showReplyForm = false;
+    public bool $isLiked = false;
+    public int $likesCount;
 
     // Social sharing
     public $shareUrl;
@@ -33,12 +36,15 @@ class NewsDetail extends Component
         'replyContent' => 'required|min:3|max:500',
     ];
 
-    public function mount(News $news)
+    public function mount(News $news): void
     {
-        // Check if news is published
+
         if ($news->published_at > now()) {
             abort(404);
         }
+
+        $this->isLiked = true;
+        $this->likesCount = 1;
 
         // Load relationships if not already loaded
         $this->news = $news->load(['author', 'category', 'tags']);
@@ -85,7 +91,7 @@ class NewsDetail extends Component
         $this->dispatch('commentAdded');
     }
 
-    public function toggleReplyForm($commentId)
+    public function toggleReplyForm($commentId): void
     {
         $this->replyTo = $this->replyTo === $commentId ? null : $commentId;
         $this->showReplyForm = $this->replyTo !== null;
@@ -119,7 +125,7 @@ class NewsDetail extends Component
         $this->dispatch('commentAdded');
     }
 
-    public function likeComment($commentId)
+    public function likeComment($commentId): void
     {
         if (!Auth::check()) {
             return;
@@ -139,11 +145,12 @@ class NewsDetail extends Component
         $this->dispatch('commentLiked');
     }
 
-    public function updateReadingProgress($progress)
+    public function updateReadingProgress($progress): void
     {
         $this->readingProgress = $progress;
     }
 
+    #[Layout('layouts.public')]
     public function render()
     {
         $comments = Comment::where('news_id', $this->news->id)

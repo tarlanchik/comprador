@@ -5,23 +5,21 @@
                 id="languageDropdown"
                 data-bs-toggle="dropdown"
                 aria-expanded="false">
-            <span class="flag-emoji me-2">{{ $supportedLocales[$currentLocale]['flag'] }}</span>
-            <span class="locale-name d-none d-md-inline">{{ $supportedLocales[$currentLocale]['name'] }}</span>
-            <span class="locale-code d-md-none">{{ strtoupper($currentLocale) }}</span>
+            <span class="flag-emoji me-2">{{ $supportedLocales[$current]['flag'] }}</span>
+            <span class="locale-name d-none d-md-inline">{{ $supportedLocales[$current]['name'] }}</span>
+            <span class="locale-code d-md-none">{{ strtoupper($current) }}</span>
         </button>
 
         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="languageDropdown">
-            @foreach($supportedLocales as $localeCode => $localeData)
+            @foreach(config('app.supported_locales') as $localeCode => $localeData)
                 <li>
-                    <button class="dropdown-item d-flex align-items-center {{ $localeCode === $currentLocale ? 'active' : '' }}"
-                            wire:click="switchLocale('{{ $localeCode }}')"
-                            type="button">
+                    <a class="dropdown-item d-flex align-items-center {{ $localeCode === $current ? 'active' : '' }}" href="{{ route(Route::currentRouteName(), array_merge(Route::current()->parameters(), ['lang' => $localeCode])) }}">
                         <span class="flag-emoji me-2">{{ $localeData['flag'] }}</span>
                         <span class="locale-name">{{ $localeData['name'] }}</span>
-                        @if($localeCode === $currentLocale)
+                        @if($localeCode === $current)
                             <i class="bi bi-check ms-auto text-primary"></i>
                         @endif
-                    </button>
+                    </a>
                 </li>
             @endforeach
         </ul>

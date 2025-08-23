@@ -52,7 +52,7 @@
                                     <small class="text-muted">
                                         <i class="bi bi-calendar"></i> {{ $news->created_at->format('M d, Y') }}
                                     </small>
-                                    <a href="{{ route('news.show', $news->id) }}" class="btn btn-outline-primary btn-sm">
+                                    <a href="{{ route('news.show', ['lang' => app()->getLocale(),'news' => $news->id]) }}" class="btn btn-outline-primary btn-sm">
                                         Read More <i class="bi bi-arrow-right"></i>
                                     </a>
                                 </div>

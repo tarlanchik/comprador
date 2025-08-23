@@ -2,10 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasLocalizedColumns;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Carbon;
 
 /**
  * @method static \App\Models\Category findOrFail(int $id, array $columns = ['*'])
@@ -17,32 +22,33 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string $name_az
  * @property int|null $parent_id
  * @property int|null $product_type_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Category> $children
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, Category> $children
  * @property-read int|null $children_count
  * @property-read Category|null $parent
  * @property-read \App\Models\ProductType|null $productType
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Category newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Category newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Category query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Category whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Category whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Category whereNameAz($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Category whereNameEn($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Category whereNameRu($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Category whereParentId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Category whereProductTypeId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Category whereUpdatedAt($value)
+ * @method static Builder<static>|Category newModelQuery()
+ * @method static Builder<static>|Category newQuery()
+ * @method static Builder<static>|Category query()
+ * @method static Builder<static>|Category whereCreatedAt($value)
+ * @method static Builder<static>|Category whereId($value)
+ * @method static Builder<static>|Category whereNameAz($value)
+ * @method static Builder<static>|Category whereNameEn($value)
+ * @method static Builder<static>|Category whereNameRu($value)
+ * @method static Builder<static>|Category whereParentId($value)
+ * @method static Builder<static>|Category whereProductTypeId($value)
+ * @method static Builder<static>|Category whereUpdatedAt($value)
  */
 class Category extends Model
 {
-    use HasFactory;
+    use HasFactory, HasLocalizedColumns;
+
     protected $fillable = ['name_ru', 'name_en', 'name_az', 'parent_id','product_type_id'];
 
     public function goods(): HasMany
     {
-        return $this->hasMany(Goods::class, 'category_id'); // 'category_id' — имя внешнего ключа в таблице goods
+        return $this->hasMany(Goods::class, 'category_id');
     }
     public static function getOrderedCategories(): array
     {

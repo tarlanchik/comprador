@@ -18,14 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Register the alias
+        // Регистрируем alias для SetLocale
         $middleware->alias([
             'set.locale' => SetLocale::class,
-        ]);
-
-        // Apply to all web routes using the class directly
-        $middleware->web([
-            SetLocale::class, // Add directly to web middleware stack
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

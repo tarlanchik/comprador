@@ -69,6 +69,21 @@
                         </li>
                     </ul>
                 </li>
+
+                <li class="nav-item {{ request()->routeIs('admin.pages.index') ? 'menu-open' : '' }}  {{ request()->routeIs('admin.pages.edit') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('admin.pages.index') ? 'active' : '' }} {{ request()->routeIs('admin.pages.edit') ? 'active' : '' }}">
+                        <i class="bi bi-file-earmark-fill"></i>
+                        <p>Страницы <i class="nav-arrow bi bi-chevron-right"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.pages.index') }}" class="nav-link {{ request()->routeIs('admin.pages.edit') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle text-warning"></i>
+                                <p>Список страниц</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </nav>
     </div>

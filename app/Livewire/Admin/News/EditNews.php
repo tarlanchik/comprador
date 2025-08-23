@@ -3,8 +3,8 @@ namespace App\Livewire\Admin\News;
 
 use App\Models\News;
 //use Illuminate\Support\Facades\Log;
-use App\Rules\TrixContentRequired;
-use Illuminate\Container\Attributes\Log;
+//use App\Rules\TrixContentRequired;
+//use Illuminate\Container\Attributes\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;

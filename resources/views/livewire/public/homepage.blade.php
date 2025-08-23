@@ -34,7 +34,7 @@
                     <div class="row g-3">
                         @foreach($categories as $category)
                             <div class="col-6 col-md-4 col-lg-3">
-                                <a href="{{ route('products.category', $category->id) }}" class="category-link">
+                                <a href="{{ route('products.category', ['lang' => app()->getLocale(), 'categoryId' => $category->id]) }}" class="category-link">
                                     <div class="text-center">
                                         <i class="bi bi-laptop" style="font-size: 2rem; margin-bottom: 10px;"></i>
                                         <div>{{ $category->{'name_' . app()->getLocale()} }}</div>
@@ -85,7 +85,7 @@
                                 </div>
 
                                 <div class="d-flex gap-2 justify-content-center">
-                                    <a href="{{ route('products.show', $product->id) }}" class="btn btn-outline-primary">
+                                    <a href="{{ route('products.show', ['lang' => app()->getLocale(), $product->id]) }}" class="btn btn-outline-primary">
                                         <i class="bi bi-eye"></i> View
                                     </a>
                                     <button
@@ -155,7 +155,7 @@
                                     <i class="bi bi-calendar"></i> {{ $news->created_at->format('M d, Y') }}
                                 </small>
 
-                                <a href="{{ route('news.show', $news->id) }}" class="btn btn-outline-primary">
+                                <a href="{{ route('news.show', ['lang' => app()->getLocale(), 'news' => $news->id]) }}" class="btn btn-outline-primary">
                                     Read More <i class="bi bi-arrow-right"></i>
                                 </a>
                             </div>

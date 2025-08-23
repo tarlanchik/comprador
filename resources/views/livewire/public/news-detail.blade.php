@@ -1,488 +1,800 @@
-<div class="min-h-screen bg-gray-50">
-    {{-- Reading Progress Bar --}}
-    <div class="fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
-        <div class="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-300 ease-out"
-             style="width: {{ $readingProgress }}%"></div>
-    </div>
+<div>
+    <!-- News Detail Header -->
+    <div class="news-hero-section position-relative overflow-hidden">
+        <div class="hero-background"></div>
+        <div class="container position-relative">
+            <!-- Breadcrumb Navigation -->
+            <nav aria-label="breadcrumb" class="pt-4 pb-3">
+                <ol class="breadcrumb custom-breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{{route('home', ['lang' => app()->getLocale()])}}" wire:navigate class="text-white-50">
+                            <i class="bi bi-house-door"></i> Home
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('news.index', ['lang' => app()->getLocale()]) }}" wire:navigate class="text-white-50">News</a>
+                    </li>
+                    <li class="breadcrumb-item active text-white">{{ $news->category }}</li>
+                </ol>
+            </nav>
 
-    {{-- Hero Section --}}
-    <div class="relative bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 overflow-hidden">
-        @if($news->featured_image)
-            <div class="absolute inset-0">
-                <img src="{{ Storage::url($news->featured_image) }}"
-                     alt="{{ $news->title_ru }}"
-                     class="w-full h-full object-cover opacity-30">
-                <div class="absolute inset-0 bg-black opacity-50"></div>
-            </div>
-        @endif
+            <!-- Back Button -->
+            <a href="{{ route('news.index', ['lang' => app()->getLocale()]) }}" wire:navigate class="btn btn-outline-light rounded-pill mb-4">
+                <i class="bi bi-arrow-left"></i> Back to News
+            </a>
 
-        <div class="relative container mx-auto px-6 py-20">
-            <div class="max-w-4xl mx-auto text-center text-white">
-                {{-- Category Badge --}}
-                <div class="inline-flex items-center px-4 py-2 rounded-full bg-{{ $news->category->color ?? 'blue' }}-600 text-sm font-semibold mb-6">
-                    <i class="fas fa-{{ $news->category->icon ?? 'newspaper' }} mr-2"></i>
-                    {{ $news->category->name_en }}
-                </div>
+            <!-- Article Meta Info -->
+            <div class="article-meta-header glass-card p-3 rounded-4 mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex flex-wrap align-items-center text-white-75">
+                            <span class="me-4">
+                                <i class="bi bi-calendar3"></i>
+                                {{ $news->created_at->format('M d, Y') }}
+                            </span>
+                            <span class="me-4">
+                                <i class="bi bi-person"></i>
+                                {{ $news->author ?? 'Admin' }}
+                            </span>
+                            <span class="me-4">
+                                <i class="bi bi-eye"></i>
+                                {{ $news->views ?? 0 }} views
+                            </span>
 
-                {{-- Title --}}
-                <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                    {{ $news->title_ru }}
-                </h1>
-
-                {{-- Meta Information --}}
-                <div class="flex flex-wrap items-center justify-center gap-6 text-gray-300 mb-8">
-                    <div class="flex items-center">
-                        <img src="{{ $news->author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($news->author->name) }}"
-                             alt="{{ $news->author->name ?? 'Неизвестный автор' }}"
-                             class="w-10 h-10 rounded-full mr-3">
-                        <span>{{ $news->author->name ?? 'Неизвестный автор' }}</span>
+                        </div>
                     </div>
-                    <div class="flex items-center">
-                        <i class="far fa-calendar mr-2"></i>
-                        <span>{{ $news->created_at->format('F j, Y') }}</span>
+                    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                        @if($news->tags)
+                            @foreach(explode(',', $news->tags) as $tag)
+                                <span class="badge bg-primary-gradient rounded-pill me-1">{{ trim($tag) }}</span>
+                            @endforeach
+                        @endif
                     </div>
-                    <div class="flex items-center">
-                        <i class="far fa-clock mr-2"></i>
-                        <span>{{ $news->reading_time ?? '5' }} min read</span>
-                    </div>
-                    <div class="flex items-center">
-                        <i class="far fa-eye mr-2"></i>
-                        <span>{{ number_format($news->views) }} views</span>
-                    </div>
-                </div>
-
-                {{-- Social Share Buttons --}}
-                <div class="flex justify-center space-x-4">
-                    <button onclick="shareOnFacebook()"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full transition-colors duration-300">
-                        <i class="fab fa-facebook-f mr-2"></i>Share
-                    </button>
-                    <button onclick="shareOnTwitter()"
-                            class="bg-sky-500 hover:bg-sky-600 text-white px-6 py-3 rounded-full transition-colors duration-300">
-                        <i class="fab fa-twitter mr-2"></i>Tweet
-                    </button>
-                    <button onclick="shareOnLinkedIn()"
-                            class="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-full transition-colors duration-300">
-                        <i class="fab fa-linkedin-in mr-2"></i>Share
-                    </button>
-                    <button onclick="copyToClipboard()"
-                            class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-full transition-colors duration-300">
-                        <i class="fas fa-link mr-2"></i>Copy
-                    </button>
                 </div>
             </div>
+
+            <!-- Article Title -->
+            <h1 class="display-4 fw-bold text-white mb-3 article-title">{{ $news->title }}</h1>
+
+            @if($news->summary)
+                <p class="lead text-white-75 mb-4">{{ $news->summary }}</p>
+            @endif
         </div>
     </div>
 
-    {{-- Main Content --}}
-    <div class="container mx-auto px-6 py-16">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            {{-- Article Content --}}
-            <div class="lg:col-span-2">
-                <article class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div class="p-8 md:p-12" id="article-content">
-                        {{-- Article Image --}}
-                        @if($news->featured_image)
-                            <img src="{{ Storage::url($news->featured_image) }}"
-                                 alt="{{ $news->title_ru }}"
-                                 class="w-full h-64 md:h-96 object-cover rounded-xl mb-8">
-                        @endif
+    <!-- Image Carousel Section -->
+    @if($news->images && count(json_decode($news->images, true)) > 0)
+        <div class="container my-5">
+            <div id="newsImageCarousel" class="carousel slide news-carousel" data-bs-ride="carousel" data-bs-interval="4000">
+                <div class="carousel-indicators custom-indicators">
+                    @foreach(json_decode($news->images, true) as $index => $image)
+                        <button type="button"
+                                data-bs-target="#newsImageCarousel"
+                                data-bs-slide-to="{{ $index }}"
+                                class="{{ $index === 0 ? 'active' : '' }}"
+                                aria-current="{{ $index === 0 ? 'true' : 'false' }}"
+                                aria-label="Slide {{ $index + 1 }}">
+                        </button>
+                    @endforeach
+                </div>
 
-                        {{-- Article Excerpt --}}
-                        @if($news->excerpt)
-                            <div class="text-xl text-gray-600 leading-relaxed mb-8 font-light border-l-4 border-blue-500 pl-6">
-                                {{ $news->excerpt }}
-                            </div>
-                        @endif
-
-                        {{-- Article Content --}}
-                        <div class="prose prose-lg max-w-none">
-                            {!! $news->content !!}
-                        </div>
-
-                        {{-- Tags --}}
-                        @if($news->tags && $news->tags->count() > 0)
-                            <div class="mt-12 pt-8 border-t border-gray-200">
-                                <h4 class="text-lg font-semibold mb-4 text-gray-800">Tags:</h4>
-                                <div class="flex flex-wrap gap-2">
-                                    @foreach($news->tags as $tag)
-                                        <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-200 transition-colors cursor-pointer">
-                                            #{{ $tag->name }}
-                                        </span>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
-
-                        {{-- Author Bio --}}
-                        <div class="mt-12 pt-8 border-t border-gray-200">
-                            <div class="flex items-start space-x-4">
-                                <img src="{{ $news->author->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($news->author->name ?? 'Неизвестный автор') }}"
-                                     alt="{{ $news->author->name ?? 'Неизвестный автор' }}"
-                                     class="w-16 h-16 rounded-full">
-                                <div class="flex-1">
-                                    <h4 class="text-xl font-semibold text-gray-800">{{ $news->author->name ?? 'Неизвестный автор' }}</h4>
-                                    @if($news->author->bio)
-                                        <p class="text-gray-600 mt-2">{{ $news->author->bio }}</p>
-                                    @endif
-                                    <div class="flex space-x-3 mt-3">
-                                        @if($news->author->twitter)
-                                            <a href="{{ $news->author->twitter }}" class="text-blue-500 hover:text-blue-600">
-                                                <i class="fab fa-twitter"></i>
-                                            </a>
-                                        @endif
-                                        @if($news->author->linkedin)
-                                            <a href="{{ $news->author->linkedin }}" class="text-blue-700 hover:text-blue-800">
-                                                <i class="fab fa-linkedin-in"></i>
-                                            </a>
-                                        @endif
+                <div class="carousel-inner rounded-4 overflow-hidden">
+                    @foreach(json_decode($news->images, true) as $index => $image)
+                        <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                            <img src="{{ asset($image['image_path']) }}"
+                                 class="d-block w-100 carousel-image"
+                                 alt="{{ $image['alt'] ?? 'News Image ' . ($index + 1) }}"
+                                 loading="{{ $index === 0 ? 'eager' : 'lazy' }}">
+                            @if(isset($image['caption']))
+                                <div class="carousel-caption">
+                                    <div class="caption-content">
+                                        <p class="mb-0">{{ $image['caption'] }}</p>
                                     </div>
                                 </div>
-                            </div>
+                            @endif
                         </div>
+                    @endforeach
+                </div>
+
+                <button class="carousel-control-prev custom-control" type="button" data-bs-target="#newsImageCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next custom-control" type="button" data-bs-target="#newsImageCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    @endif
+
+    <!-- Main Article Content -->
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <article class="article-content-card">
+                    <div class="article-body">
+                        {!! nl2br(e($news->content)) !!}
                     </div>
                 </article>
 
-                {{-- Comments Section --}}
-                <div class="bg-white rounded-2xl shadow-lg overflow-hidden mt-8">
-                    <div class="p-8">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-6">
-                            Comments ({{ $comments->total() }})
-                        </h3>
-
-                        {{-- Add Comment Form --}}
-                        @auth
-                            <div class="mb-8">
-                                <div class="flex items-start space-x-4">
-                                    <img src="{{ auth()->user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) }}"
-                                         alt="{{ auth()->user()->name }}"
-                                         class="w-12 h-12 rounded-full">
-                                    <div class="flex-1">
-                                        <form wire:submit="addComment">
-                                            <textarea wire:model="newComment"
-                                                      placeholder="Share your thoughts..."
-                                                      rows="4"
-                                                      class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
-                                            @error('newComment')
-                                            <span class="text-red-500 text-sm mt-2 block">{{ $message }}</span>
-                                            @enderror
-                                            <div class="flex justify-between items-center mt-4">
-                                                <span class="text-sm text-gray-500">
-                                                    {{ strlen($newComment) }}/1000 characters
-                                                </span>
-                                                <button type="submit"
-                                                        class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 disabled:opacity-50"
-                                                        wire:loading.attr="disabled">
-                                                    <span wire:loading.remove>Post Comment</span>
-                                                    <span wire:loading>Posting...</span>
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
+                <!-- YouTube Video Section -->
+                @if($news->youtube_url)
+                    <div class="video-section mt-5">
+                        <div class="video-card">
+                            <div class="video-header d-flex align-items-center mb-3">
+                                <div class="video-icon me-3">
+                                    <i class="bi bi-play-circle-fill text-danger"></i>
+                                </div>
+                                <div>
+                                    <h4 class="mb-0">Watch Related Video</h4>
+                                    <p class="text-muted mb-0">Additional coverage and insights</p>
                                 </div>
                             </div>
-                        @else
-                            <div class="mb-8 p-4 bg-gray-100 rounded-xl text-center">
-                                <p class="text-gray-600 mb-4">Please login to leave a comment</p>
-                                <a href="{{ route('login') }}" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                                    Login
-                                </a>
+                            <div class="video-wrapper">
+                                <iframe
+                                    src="{{ $this->getYouTubeEmbedUrl() }}"
+                                    title="YouTube video player"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowfullscreen>
+                                </iframe>
                             </div>
-                        @endauth
-
-                        {{-- Comments List --}}
-                        <div class="space-y-6">
-                            @forelse($comments as $comment)
-                                <div class="border-b border-gray-200 pb-6 last:border-b-0">
-                                    {{-- Main Comment --}}
-                                    <div class="flex items-start space-x-4">
-                                        <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($comment->user->name) }}"
-                                             alt="{{ $comment->user->name }}"
-                                             class="w-12 h-12 rounded-full">
-                                        <div class="flex-1">
-                                            <div class="bg-gray-50 rounded-xl p-4">
-                                                <div class="flex items-center justify-between mb-2">
-                                                    <h5 class="font-semibold text-gray-800">{{ $comment->user->name }}</h5>
-                                                    <span class="text-sm text-gray-500">{{ $comment->created_at->diffForHumans() }}</span>
-                                                </div>
-                                                <p class="text-gray-700">{{ $comment->content }}</p>
-                                            </div>
-
-                                            {{-- Comment Actions --}}
-                                            <div class="flex items-center space-x-4 mt-3">
-                                                <button wire:click="likeComment({{ $comment->id }})"
-                                                        class="flex items-center text-gray-500 hover:text-blue-600 transition-colors">
-                                                    <i class="far fa-heart mr-1"></i>
-                                                    <span>{{ $comment->likes->count() }}</span>
-                                                </button>
-                                                @auth
-                                                    <button wire:click="toggleReplyForm({{ $comment->id }})"
-                                                            class="text-gray-500 hover:text-blue-600 transition-colors">
-                                                        Reply
-                                                    </button>
-                                                @endauth
-                                            </div>
-
-                                            {{-- Reply Form --}}
-                                            @auth
-                                                @if($replyTo === $comment->id && $showReplyForm)
-                                                    <div class="mt-4">
-                                                        <form wire:submit="addReply">
-                                                            <textarea wire:model="replyContent"
-                                                                      placeholder="Write your reply..."
-                                                                      rows="3"
-                                                                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
-                                                            @error('replyContent')
-                                                            <span class="text-red-500 text-sm mt-2 block">{{ $message }}</span>
-                                                            @enderror
-                                                            <div class="flex justify-end space-x-3 mt-3">
-                                                                <button type="button"
-                                                                        wire:click="toggleReplyForm({{ $comment->id }})"
-                                                                        class="text-gray-500 hover:text-gray-700 transition-colors">
-                                                                    Cancel
-                                                                </button>
-                                                                <button type="submit"
-                                                                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                                                                    Reply
-                                                                </button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                @endif
-                                            @endauth
-
-                                            {{-- Replies --}}
-                                            @if($comment->replies && $comment->replies->count() > 0)
-                                                <div class="ml-6 mt-4 space-y-4">
-                                                    @foreach($comment->replies as $reply)
-                                                        <div class="flex items-start space-x-3">
-                                                            <img src="{{ $reply->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($reply->user->name) }}"
-                                                                 alt="{{ $reply->user->name }}"
-                                                                 class="w-10 h-10 rounded-full">
-                                                            <div class="flex-1 bg-gray-50 rounded-lg p-3">
-                                                                <div class="flex items-center justify-between mb-1">
-                                                                    <h6 class="font-semibold text-gray-800 text-sm">{{ $reply->user->name }}</h6>
-                                                                    <span class="text-xs text-gray-500">{{ $reply->created_at->diffForHumans() }}</span>
-                                                                </div>
-                                                                <p class="text-gray-700 text-sm">{{ $reply->content }}</p>
-                                                            </div>
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="text-center py-8">
-                                    <i class="far fa-comments text-4xl text-gray-400 mb-4"></i>
-                                    <p class="text-gray-500">No comments yet. Be the first to comment!</p>
-                                </div>
-                            @endforelse
                         </div>
-
-                        {{-- Pagination --}}
-                        @if($comments->hasPages())
-                            <div class="mt-8">
-                                {{ $comments->links() }}
-                            </div>
-                        @endif
                     </div>
-                </div>
-            </div>
+                @endif
 
-            {{-- Sidebar --}}
-            <div class="lg:col-span-1">
-                {{-- Sticky Sidebar --}}
-                <div class="sticky top-8 space-y-8">
-                    {{-- Share Widget --}}
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h4 class="text-lg font-semibold mb-4 text-gray-800">Share this article</h4>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button onclick="shareOnFacebook()" class="flex items-center justify-center bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors">
-                                <i class="fab fa-facebook-f"></i>
+                <!-- Article Actions -->
+                <div class="article-actions mt-5">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <button wire:click="toggleLike" class="btn {{ $isLiked ? 'btn-danger' : 'btn-outline-danger' }} w-100 action-btn">
+                                <i class="bi bi-heart{{ $isLiked ? '-fill' : '' }}"></i>
+                                {{ $likesCount }} Likes
                             </button>
-                            <button onclick="shareOnTwitter()" class="flex items-center justify-center bg-sky-500 text-white p-3 rounded-lg hover:bg-sky-600 transition-colors">
-                                <i class="fab fa-twitter"></i>
-                            </button>
-                            <button onclick="shareOnLinkedIn()" class="flex items-center justify-center bg-blue-700 text-white p-3 rounded-lg hover:bg-blue-800 transition-colors">
-                                <i class="fab fa-linkedin-in"></i>
-                            </button>
-                            <button onclick="copyToClipboard()" class="flex items-center justify-center bg-gray-600 text-white p-3 rounded-lg hover:bg-gray-700 transition-colors">
-                                <i class="fas fa-link"></i>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-primary w-100 action-btn" data-bs-toggle="modal" data-bs-target="#shareModal">
+                                <i class="bi bi-share"></i>
+                                Share Article
                             </button>
                         </div>
                     </div>
+                </div>
 
-                    {{-- Related Articles --}}
-                    @if($relatedNews && $relatedNews->count() > 0)
-                        <div class="bg-white rounded-2xl shadow-lg p-6">
-                            <h4 class="text-lg font-semibold mb-6 text-gray-800">Related Articles</h4>
-                            <div class="space-y-4">
-                                @foreach($relatedNews as $related)
-                                    <article class="group">
-                                        <a href="{{ route('news.show', $related->slug) }}" class="block">
-                                            <div class="flex space-x-3">
-                                                @if($related->featured_image)
-                                                    <img src="{{ Storage::url($related->featured_image) }}"
-                                                         alt="{{ $related->title }}"
-                                                         class="w-20 h-20 object-cover rounded-lg group-hover:opacity-80 transition-opacity">
-                                                @endif
-                                                <div class="flex-1">
-                                                    <h5 class="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-2 mb-2">
-                                                        {{ $related->title }}
-                                                    </h5>
-                                                    <div class="text-sm text-gray-500">
-                                                        {{ $related->published_at->format('M j, Y') }}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </article>
-                                @endforeach
+                <!-- Author Information -->
+                <div class="author-section mt-5">
+                    <div class="author-card">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <img src="{{ $news->author_avatar ?? '/api/placeholder/80/80' }}"
+                                     alt="{{ $news->author ?? 'Author' }}"
+                                     class="author-avatar">
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">{{ $news->author ?? 'Tech Editorial Team' }}</h5>
+                                <p class="text-muted mb-2">{{ $news->author_bio ?? 'Experienced tech journalist covering the latest developments in technology and gaming industry.' }}</p>
+                                <div class="author-social">
+                                    <a href="#" class="text-decoration-none me-3"><i class="bi bi-twitter"></i></a>
+                                    <a href="#" class="text-decoration-none me-3"><i class="bi bi-linkedin"></i></a>
+                                    <a href="#" class="text-decoration-none"><i class="bi bi-envelope"></i></a>
+                                </div>
                             </div>
                         </div>
-                    @endif
-
-                    {{-- Newsletter Subscription --}}
-                    <div class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg p-6 text-white">
-                        <h4 class="text-lg font-semibold mb-3">Stay Updated</h4>
-                        <p class="text-blue-100 mb-4 text-sm">Subscribe to get the latest news and updates delivered to your inbox.</p>
-                        <form class="space-y-3">
-                            <input type="email" placeholder="Your email address"
-                                   class="w-full p-3 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-white">
-                            <button type="submit"
-                                    class="w-full bg-white text-blue-600 p-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-                                Subscribe
-                            </button>
-                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Flash Messages --}}
-    @if (session()->has('success'))
-        <div x-data="{ show: true }"
-             x-show="show"
-             x-transition
-             x-init="setTimeout(() => show = false, 3000)"
-             class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
-            {{ session('success') }}
-        </div>
+    <!-- Related News Section -->
+    @if($relatedNews && count($relatedNews) > 0)
+        <section class="related-news-section">
+            <div class="container">
+                <h3 class="section-title text-center mb-5">
+                    <i class="bi bi-newspaper"></i> Related Articles
+                </h3>
+                <div class="row g-4">
+                    @foreach($relatedNews as $related)
+                        <div class="col-lg-4 col-md-6">
+                            <div class="related-news-card h-100">
+                                <div class="card-image-wrapper">
+                                    <img src="{{ $related->featured_image ?? '/api/placeholder/350/200' }}"
+                                         alt="{{ $related->title }}"
+                                         class="card-img-top">
+                                    <div class="card-overlay">
+                                        <a href="{{ route('news.show', ['lang' => app()->getLocale(), 'news' => $related->slug]) }}"
+                                           wire:navigate
+                                           class="btn btn-light rounded-pill">
+                                            Read More <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <span class="badge bg-primary rounded-pill mb-2">{{ $related->category }}</span>
+                                    <h6 class="card-title">{{ Str::limit($related->title, 60) }}</h6>
+                                    <p class="card-text text-muted small">{{ Str::limit($related->summary, 100) }}</p>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar"></i> {{ $related->created_at->format('M d') }}
+                                        </small>
+                                        <small class="text-muted">
+                                            <i class="bi bi-eye"></i> {{ $related->views ?? 0 }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
     @endif
 
-    @if (session()->has('error'))
-        <div x-data="{ show: true }"
-             x-show="show"
-             x-transition
-             x-init="setTimeout(() => show = false, 3000)"
-             class="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
-            {{ session('error') }}
-        </div>
-    @endif
+    <!-- Share Modal -->
+    <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title" id="shareModalLabel">Share this article</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="share-buttons">
+                        <a href="#" onclick="shareOnFacebook()" class="share-btn facebook">
+                            <i class="bi bi-facebook"></i>
+                            <span>Facebook</span>
+                        </a>
+                        <a href="#" onclick="shareOnTwitter()" class="share-btn twitter">
+                            <i class="bi bi-twitter"></i>
+                            <span>Twitter</span>
+                        </a>
+                        <a href="#" onclick="shareOnLinkedIn()" class="share-btn linkedin">
+                            <i class="bi bi-linkedin"></i>
+                            <span>LinkedIn</span>
+                        </a>
+                        <a href="#" onclick="shareOnWhatsApp()" class="share-btn whatsapp">
+                            <i class="bi bi-whatsapp"></i>
+                            <span>WhatsApp</span>
+                        </a>
+                    </div>
 
-    {{-- JavaScript --}}
+                    <div class="mt-4">
+                        <label for="shareUrl" class="form-label">Copy Link</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="shareUrl" value="{{ request()->url() }}" readonly>
+                            <button class="btn btn-outline-primary" onclick="copyToClipboard()">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Modern Design Variables */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            --success-gradient: linear-gradient(45deg, #00b894, #00cec9);
+            --card-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            --hover-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            --glass-bg: rgba(255,255,255,0.15);
+            --glass-border: rgba(255,255,255,0.2);
+        }
+
+        /* Hero Section */
+        .news-hero-section {
+            background: var(--primary-gradient);
+            color: white;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .custom-breadcrumb {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 0.5rem 1.5rem;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+        }
+
+        .article-meta-header {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .article-title {
+            animation: fadeInUp 0.8s ease-out;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .reading-time-badge {
+            background: var(--success-gradient);
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+
+        /* Image Carousel */
+        .news-carousel {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .carousel-image {
+            height: 500px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .carousel-item:hover .carousel-image {
+            transform: scale(1.02);
+        }
+
+        .custom-indicators {
+            bottom: 20px;
+        }
+
+        .custom-indicators button {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 2px solid white;
+            background: rgba(255,255,255,0.5);
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+
+        .custom-indicators button.active {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        .custom-control {
+            width: 50px;
+            height: 50px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .custom-control:hover {
+            background: rgba(0,0,0,0.8);
+            transform: scale(1.1);
+        }
+
+        .carousel-caption {
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            left: 0;
+            right: 0;
+            padding: 3rem 2rem 2rem;
+        }
+
+        .caption-content {
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1rem 2rem;
+            display: inline-block;
+        }
+
+        /* Article Content */
+        .article-content-card {
+            background: white;
+            border-radius: 25px;
+            box-shadow: var(--card-shadow);
+            padding: 3rem;
+            animation: fadeInUp 1.2s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .article-content-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .article-body {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #444;
+        }
+
+        .article-body p {
+            margin-bottom: 1.5rem;
+            text-align: justify;
+        }
+
+        .article-body h2,
+        .article-body h3 {
+            color: #2c3e50;
+            margin: 2.5rem 0 1.5rem 0;
+            position: relative;
+        }
+
+        .article-body h2::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--secondary-gradient);
+            border-radius: 2px;
+        }
+
+        /* Video Section */
+        .video-section {
+            animation: fadeInUp 1.4s ease-out;
+        }
+
+        .video-card {
+            background: white;
+            border-radius: 25px;
+            box-shadow: var(--card-shadow);
+            padding: 2.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .video-icon {
+            font-size: 3rem;
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Action Buttons */
+        .article-actions {
+            animation: fadeInUp 1.6s ease-out;
+        }
+
+        .action-btn {
+            border-radius: 25px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-width: 2px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        /* Author Section */
+        .author-section {
+            animation: fadeInUp 1.8s ease-out;
+        }
+
+        .author-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 25px;
+            padding: 2.5rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .author-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid rgba(255,255,255,0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .author-avatar:hover {
+            transform: scale(1.1);
+        }
+
+        .author-social a {
+            color: rgba(255,255,255,0.8);
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+
+        .author-social a:hover {
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Related News */
+        .related-news-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 4rem 0;
+        }
+
+        .section-title {
+            font-weight: 700;
+            color: #2c3e50;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: var(--secondary-gradient);
+            border-radius: 2px;
+        }
+
+        .related-news-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .related-news-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .card-image-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image-wrapper img {
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .related-news-card:hover .card-image-wrapper img {
+            transform: scale(1.1);
+        }
+
+        .card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .related-news-card:hover .card-overlay {
+            opacity: 1;
+        }
+
+        /* Share Modal */
+        .share-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .share-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border-radius: 15px;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .share-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            color: white;
+        }
+
+        .share-btn i {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+
+        .share-btn.facebook { background: linear-gradient(45deg, #3b5998, #4c70ba); }
+        .share-btn.twitter { background: linear-gradient(45deg, #1da1f2, #0d8bd9); }
+        .share-btn.linkedin { background: linear-gradient(45deg, #0077b5, #005885); }
+        .share-btn.whatsapp { background: linear-gradient(45deg, #25d366, #128c7e); }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .news-hero-section {
+                min-height: 300px;
+                padding: 2rem 0;
+            }
+
+            .article-content-card,
+            .video-card,
+            .author-card {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .carousel-image {
+                height: 250px;
+            }
+
+            .share-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading States */
+        .loading-shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+    </style>
+
     <script>
-        // Social Sharing Functions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize carousel with custom settings
+            const carousel = new bootstrap.Carousel(document.querySelector('#newsImageCarousel'), {
+                interval: 4000,
+                wrap: true,
+                pause: 'hover'
+            });
+
+            // Add intersection observer for animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Observe elements for animation
+            document.querySelectorAll('.article-content-card, .video-section, .author-section').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'all 0.6s ease-out';
+                observer.observe(el);
+            });
+        });
+
+        // Social sharing functions
         function shareOnFacebook() {
             const url = encodeURIComponent(window.location.href);
-            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=400');
+            const title = encodeURIComponent(document.title);
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${title}`, '_blank', 'width=600,height=400');
         }
 
         function shareOnTwitter() {
             const url = encodeURIComponent(window.location.href);
-            const title = encodeURIComponent('{{ $news->title }}');
-            window.open(`https://twitter.com/intent/tweet?url=${url}&text=${title}`, '_blank', 'width=600,height=400');
+            const text = encodeURIComponent(document.title);
+            window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank', 'width=600,height=400');
         }
 
         function shareOnLinkedIn() {
             const url = encodeURIComponent(window.location.href);
-            const title = encodeURIComponent('{{ $news->title }}');
-            window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${title}`, '_blank', 'width=600,height=400');
+            window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=600,height=400');
+        }
+
+        function shareOnWhatsApp() {
+            const url = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent(document.title);
+            window.open(`https://wa.me/?text=${text} ${url}`, '_blank');
         }
 
         function copyToClipboard() {
-            navigator.clipboard.writeText(window.location.href).then(function() {
-                alert('Link copied to clipboard!');
-            });
+            const input = document.getElementById('shareUrl');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(input.value);
+
+            // Show feedback
+            const button = event.target.closest('button');
+            const originalHTML = button.innerHTML;
+            button.innerHTML = '<i class="bi bi-check"></i>';
+            button.classList.add('btn-success');
+            button.classList.remove('btn-outline-primary');
+
+            setTimeout(() => {
+                button.innerHTML = originalHTML;
+                button.classList.remove('btn-success');
+                button.classList.add('btn-outline-primary');
+            }, 2000);
         }
 
-        // Reading Progress Tracker
-        document.addEventListener('DOMContentLoaded', function() {
-            const article = document.getElementById('article-content');
-            if (article) {
-                window.addEventListener('scroll', function() {
-                    const articleTop = article.offsetTop;
-                    const articleHeight = article.offsetHeight;
-                    const scrollTop = window.pageYOffset;
-                    const windowHeight = window.innerHeight;
-
-                    const progress = Math.min(100, Math.max(0,
-                        (scrollTop - articleTop + windowHeight) / articleHeight * 100
-                    ));
-
-                @this.call('updateReadingProgress', Math.round(progress));
-                });
-            }
+        // Livewire hooks
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('article-liked', (event) => {
+                // Add success animation
+                const likeBtn = document.querySelector('.btn-danger, .btn-outline-danger');
+                likeBtn.classList.add('pulse-animation');
+                setTimeout(() => {
+                    likeBtn.classList.remove('pulse-animation');
+                }, 1000);
+            });
         });
     </script>
-
-    {{-- Styles --}}
-    <style>
-        .prose {
-            max-width: none;
-            line-height: 1.75;
-        }
-
-        .prose p {
-            margin-bottom: 1.5em;
-            color: #374151;
-        }
-
-        .prose h2, .prose h3, .prose h4 {
-            color: #1f2937;
-            font-weight: 600;
-            margin-top: 2em;
-            margin-bottom: 1em;
-        }
-
-        .prose h2 {
-            font-size: 1.875rem;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 0.5rem;
-        }
-
-        .prose h3 {
-            font-size: 1.5rem;
-        }
-
-        .prose h4 {
-            font-size: 1.25rem;
-        }
-
-        .prose blockquote {
-            border-left: 4px solid #3b82f6;
-            background: #f8fafc;
-            padding: 1rem 1.5rem;
-            margin: 2rem 0;
-            font-style: italic;
-            color: #475569;
-        }
-
-        .prose ul, .prose ol {
-            margin: 1.5rem 0;
-            padding-left: 2rem;
-        }
-
-        .prose li {
-            margin-bottom: 0.5rem;
-        }
-
-        .prose img {
-            border-radius: 0.5rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-    </style>
+</div>

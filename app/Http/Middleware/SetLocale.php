@@ -9,15 +9,13 @@ use Illuminate\Support\Facades\Session;
 
 class SetLocale
 {
-    /**
-     * Handle an incoming request.
-     */
     public function handle(Request $request, Closure $next)
     {
-        $locale = $request->route('locale'); // Get {locale} from route
+        // ⚡ Должно совпадать с {lang?} в web.php
+        $locale = $request->route('lang');
 
-        $supportedLocales = ['az', 'en', 'ru'];
-        $defaultLocale = config('app.locale');
+        $supportedLocales = config('app.short_locales', ['az', 'en', 'ru']);
+        $defaultLocale = config('app.main_lang', 'az');
 
         if ($locale && in_array($locale, $supportedLocales)) {
             App::setLocale($locale);

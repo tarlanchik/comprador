@@ -1,105 +1,63 @@
 <?php
 
+
 namespace App\Livewire\Public;
 
-use Livewire\Component;
-use Illuminate\Support\Facades\Session;
+
 use Illuminate\Support\Facades\Route;
+//use Livewire\Attributes\On;
+use Livewire\Component;
+
 
 class LanguageSwitcher extends Component
 {
-    public string $currentLocale;
-    public array $supportedLocales = [
-        'az' => [
-            'name' => 'Azərbaycan',
-            'native' => 'Azərbaycan',
-            'flag' => '🇦🇿',
-            'code' => 'az',
-            'region' => 'AZ'
-        ],
-        'en' => [
-            'name' => 'English',
-            'native' => 'English',
-            'flag' => '🇺🇸',
-            'code' => 'en',
-            'region' => 'US'
-        ],
-        'ru' => [
-            'name' => 'Русский',
-            'native' => 'Русский',
-            'flag' => '🇷🇺',
-            'code' => 'ru',
-            'region' => 'RU'
-        ],
-    ];
-
-    public array $hreflangs = [];
+    public string $current;
+    public array $supported;
+    public array $supportedLocales;
 
     public function mount(): void
     {
-        $this->currentLocale = app()->getLocale();
-        $this->generateHreflangs();
+        $this->current = app()->getLocale();
+        $this->supported = array_keys(config('app.locales'));
+        $this->supportedLocales = config('app.supported_locales', []);
     }
 
-    public function switchLocale(string $locale)
+
+    public function switchLocale(string $lang)
     {
-        if (array_key_exists($locale, $this->supportedLocales)) {
-            // Store locale in session
-            Session::put('locale', $locale);
-
-            // Set application locale
-            app()->setLocale($locale);
-
-            // Update current locale
-            $this->currentLocale = $locale;
-
-            // Generate the same URL but with new locale
-            $currentRoute = Route::currentRouteName();
-            $currentParams = request()->route()->parameters();
-
-            $newUrl = $this->buildLocalizedUrl($currentRoute, $currentParams, $locale);
-
-            // Redirect to the same page with new language
-            return redirect()->to($newUrl);
-        }
-    }
-
-    private function generateHreflangs(): void
-    {
-        $currentRoute = Route::currentRouteName();
-        $currentParams = request()->route()->parameters();
-
-        foreach ($this->supportedLocales as $locale => $data) {
-            $this->hreflangs[$locale] = $this->buildLocalizedUrl($currentRoute, $currentParams, $locale);
-        }
-    }
-
-    private function buildLocalizedUrl(string $routeName, array $params, string $locale): string
-    {
-        // Store current locale
-        $originalLocale = app()->getLocale();
-
-        // Temporarily switch to target locale
-        app()->setLocale($locale);
-
-        try {
-            // Try to generate route with locale
-            $url = route($routeName, array_merge($params, ['lang' => $locale]));
-        } catch (\Exception $e) {
-            // Fallback to current URL with lang parameter
-            $url = request()->url() . '?lang=' . $locale;
+        if (! in_array($lang, $this->supported, true)) {
+            return; // игнорируем неподдерживаемые коды
         }
 
-        // Restore original locale
-        app()->setLocale($originalLocale);
+        $route = Route::current();
+        $name = $route?->getName();
 
-        return $url;
+
+// Текущие параметры роута + заменяем lang
+        $params = $route?->parameters() ?? [];
+        $params[config('locales.route_param', 'lang')] = $lang;
+
+// Сохраняем query‑параметры
+        $query = request()->query();
+
+// Если есть имя роута — генерируем URL корректнее
+        if ($name) {
+            $url = route($name, array_merge($params, $query));
+        } else {
+// фоллбек: меняем первую часть пути на /{lang}
+            $segments = request()->segments();
+            if (!empty($segments)) {
+                $segments[0] = $lang; // первый сегмент — это {lang}
+            }
+            $path = implode('/', $segments);
+            $url = url($path . (empty($query) ? '' : ('?' . http_build_query($query))));
+        }
+
+
+// навигация без перерисовки всей страницы (для Livewire v3)
+        return $this->redirect($url, navigate: true);
     }
 
-    public function getHreflangsProperty(): array
-    {
-        return $this->hreflangs;
-    }
 
     public function render()
     {

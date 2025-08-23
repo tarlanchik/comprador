@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasLocalizedColumns;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -65,7 +67,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Goods extends Model
 {
-    use HasFactory;
+    use HasFactory, HasLocalizedColumns;
+
     protected $fillable = [
         'name_ru', 'name_en', 'name_az',
         'title_ru', 'title_en', 'title_az',
@@ -81,7 +84,8 @@ class Goods extends Model
     }
     public function images(): HasMany
     {
-        return $this->hasMany(GoodsImage::class);
+        return $this->hasMany(GoodsImage::class)->orderBy('sort_order');
+        //return $this->hasMany(GoodsImage::class);
     }
     public function parameterValues(): HasMany
     {
