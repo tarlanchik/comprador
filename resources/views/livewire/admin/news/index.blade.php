@@ -10,7 +10,7 @@
 
     @if (count($newsItems) == 0)
         <div class="card">
-            <div class="card-header"><i class="bi bi-exclamation-octagon"></i> Внимание!</div>
+            <div class="card-header">⚡️ Внимание!</div>
             <div class="card-body">
                 <div class="alert alert-warning text-center mx-auto" role="alert">
                     Пока нет доступных новостей для отображения.

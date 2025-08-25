@@ -7,18 +7,31 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Translatable\HasTranslations;
+
 //use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class News extends Model
 {
-    use HasLocalizedColumns;
+    use HasLocalizedColumns, HasTranslations;
 
     protected $fillable = [
-        'title_az', 'title_ru', 'title_en',
-        'content_az', 'content_ru', 'content_en',
-        'keywords_az', 'keywords_ru', 'keywords_en',
-        'description_az', 'description_ru', 'description_en',
-        'youtube_link', 'views', 'author_id', 'category_id','slug',
+        'title',
+        'content',
+        'keywords',
+        'description',
+        'youtube_link',
+        'views',
+        'author_id',
+        'category_id',
+        'slug',
+    ];
+
+    public array $translatable = [
+        'title',
+        'content',
+        'keywords',
+        'description',
     ];
 
     protected $casts = [

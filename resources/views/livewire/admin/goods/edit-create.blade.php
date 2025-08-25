@@ -30,13 +30,10 @@
         </div>
     @endif
 
-    <form wire:submit.prevent="save" enctype="multipart/form-data">
+    <form wire:submit.prevent="save" enctype="multipart/form-data" class="needs-validation" novalidate id="goods-edit-form">
         <div class="card">
-            <div class="card-header">
-                <h5 class="modal-title">{{ $isEdit ? 'Редактирование товара' : 'Добавление товара' }}</h5>
-            </div>
+            <div class="card-header"><h5 class="modal-title">{{ $isEdit ? 'Редактирование товара' : 'Добавление товара' }}</h5></div>
             <div class="card-body">
-
                 <ul class="nav nav-tabs mb-3" id="langTabs" role="tablist">
                     @foreach($locales as $lang=>$label)
                         <li class="nav-item" role="presentation">
@@ -51,26 +48,35 @@
                     @foreach($locales as $lang=>$label)
                         <div class="tab-pane fade @if($loop->first) show active @endif" id="{{ $lang }}" role="tabpanel">
                             <div class="mb-3">
-                                <label class="form-label">Название ({{ $label }})</label>
-                                <input type="text" wire:model="name_{{ $lang }}" class="form-control">
+                                <label for="name_{{ $lang }}" class="form-label">Название ({{ $label }})</label>
+                                <input id="name_{{ $lang }}" required type="text" wire:model="name_{{ $lang }}" class="form-control">
                                 @error("name_$lang") <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Заголовок ({{ $label }})</label>
-                                <input type="text" wire:model="title_{{ $lang }}" class="form-control">
+                                <label for=title_{{ $lang }}" class="form-label">SEO Заголовок ({{ $label }})</label>
+                                <input id="title_{{ $lang }}" maxlength="60" required type="text" wire:model="title_{{ $lang }}" class="form-control">
+                                <small class="text-muted">
+                                    {{ strlen($titles[$lang] ?? '') }}/60 Символы
+                                </small>
                                 @error("title_$lang") <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Ключевые слова ({{ $label }})</label>
-                                <input type="text" wire:model="keywords_{{ $lang }}" class="form-control">
+                                <label for="keywords_{{ $lang }}" class="form-label">SEO Ключевые слова ({{ $label }})</label>
+                                <input id="keywords_{{ $lang }}" maxlength="160" type="text" required wire:model="keywords_{{ $lang }}" class="form-control">
+                                <small class="text-muted">
+                                    Укажите через запятую. {{ strlen($keywords[$lang] ?? '') }}/160 Символы
+                                </small>
                                 @error("keywords_$lang") <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Описание ({{ $label }})</label>
-                                <textarea wire:model="description_{{ $lang }}" class="form-control" rows="3"></textarea>
+                                <label for="description_{{ $lang }}" class="form-label">SEO Описание ({{ $label }})</label>
+                                <textarea id="description_{{ $lang }}" maxlength="255" required wire:model="description_{{ $lang }}" class="form-control" rows="3"></textarea>
+                                <small class="text-muted">
+                                    {{ strlen($description[$lang] ?? '') }}/255 Символы
+                                </small>
                                 @error("description_$lang") <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
                         </div>
@@ -79,8 +85,8 @@
 
                 <div class="row mb-3">
                     <div class="col-md-4">
-                        <label class="form-label">Цена</label>
-                        <input type="number" wire:model="price" step="0.01" class="form-control">
+                        <label for="price" class="form-label">Цена</label>
+                        <input id="price" required type="number" wire:model="price" step="0.01" class="form-control">
                         @error('price') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
@@ -91,21 +97,21 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label">Количество</label>
-                        <input type="number" wire:model="count" class="form-control">
+                        <label for="count" class="form-label">Количество</label>
+                        <input id="count" required type="number" wire:model="count" class="form-control">
                         @error('count') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Ссылка на YouTube</label>
-                    <input type="url" wire:model="youtube_link" class="form-control">
+                    <input placeholder="https://www.youtube.com/watch?v=VtnvFdyvGUQ" type="url" wire:model="youtube_link" class="form-control">
                     @error('youtube_link') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Категория</label>
-                    <select wire:model="category_id" class="form-select">
+                    <label for="category_id" class="form-label">Категория</label>
+                    <select id="category_id" required wire:model="category_id" class="form-select">
                         <option value="">Выберите категорию</option>
                         @foreach($categories as $cat)
                             <option value="{{ $cat->id }}">
@@ -113,11 +119,11 @@
                             </option>
                             @foreach($cat->children as $child)
                                 <option value="{{ $child->id }}">
-                                    {{ '⇒ ' . $child->name_ru }}
+                                    {{ '👉 ' . $child->name_ru }}
                                 </option>
                                 @foreach($child->children as $grandchild)
                                     <option value="{{ $grandchild->id }}">
-                                        {{ '⇒⇒ ' . $grandchild->name_ru }}
+                                        {{ '👉👉 ' . $grandchild->name_ru }}
                                     </option>
                                 @endforeach
                             @endforeach
@@ -129,17 +135,21 @@
                 <div class="mb-3">
                     <div class="mb-3 d-flex align-items-center gap-2">
                         <div style="flex-grow: 1;">
-                            <label class="form-label">Выберите шаблон товара</label>
-                            <select wire:model="productTypeId" class="form-select">
-                                <option value="">-- Выберите шаблон --</option>
-                                @foreach($productTypes as $type)
-                                    <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                @endforeach
-                            </select>
+                            <div class="mb-3">
+                                <label for="productTypeId" class="form-label">Выберите шаблон товара</label>
+                                <div class="input-group">
+                                    <select id="productTypeId" required wire:model="productTypeId" class="form-select">
+                                        <option value="">-- Выберите шаблон --</option>
+                                        @foreach($productTypes as $type)
+                                            <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button type="button" wire:click="loadParameters" class="btn btn-primary">
+                                        <i class="bi bi-box-arrow-in-down"></i> Загрузить параметры
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <button type="button" wire:click="loadParameters" class="btn btn-primary" style="height: fit-content; margin-top: 32px;">
-                            Загрузить параметры
-                        </button>
                     </div>
                     @error('productTypeId') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
@@ -148,23 +158,21 @@
                     @php
                         $params = \App\Models\Parameter::whereIn('id', array_keys($parameters))->get()->keyBy('id');
                     @endphp
-                    <div class="p-3 mb-4" style="border: 1px solid #ccc; border-radius: 6px; background-color: #f9f9f9;">
-                        <h5 class="mb-3 text-secondary">
-                            <i class="fas fa-cog me-1"></i> Параметры товара
-                        </h5>
-
+                    <fieldset class="border rounded-3 p-4 shadow-sm bg-light mb-4">
+                        <legend class="float-none w-auto px-3 fw-bold text-primary fs-5">
+                        <i class="fas fa-cog me-1"></i> Параметры товара</legend>
                         @foreach($parameters as $paramId => $value)
-                            <div class="mb-3">
-                                <label for="param_{{ $paramId }}" class="form-label">{{ \App\Models\Parameter::find($paramId)?->name_ru }}</label>
-                                <input type="text" wire:model="parameters.{{ $paramId }}" id="param_{{ $paramId }}" class="form-control">
-                            </div>
-                        @endforeach
-                    </div>
+                        <div class="mb-3">
+                            <label for="param_{{ $paramId }}" class="form-label">{{ \App\Models\Parameter::find($paramId)?->name_ru }}</label>
+                            <input required type="text" wire:model="parameters.{{ $paramId }}" id="param_{{ $paramId }}" class="form-control">
+                        </div>
+                         @endforeach
+                    </fieldset>
                 @endif
 
                 <div class="mb-3">
-                    <label class="form-label">Фотографии (до 10 шт.)</label>
-                    <input type="file" wire:model="photos" multiple class="form-control">
+                    <label for="photos" class="form-label">Фотографии (до 10 шт.)</label>
+                    <input id="photos" required type="file" wire:model="photos" multiple class="form-control">
                     <small class="form-text text-muted">Вы можете загрузить до 10 изображений.</small>
                 </div>
 
@@ -206,10 +214,10 @@
                     </div>
                 @endif
             </div>
-        </div>
-        <div class="card-footer">
-            <div class="mt-4 text-end">
-                <button type="submit" class="btn btn-success">{{ $isEdit ? 'Сохранить изменения' : 'Добавить' }}</button>
+            <div class="card-footer">
+                <div class="text-end">
+                    <button type="submit" class="btn btn-{{ $isEdit ? 'warning' : 'primary'}}"><i class="bi bi-folder-plus"></i> {{ $isEdit ? 'Обновить' : 'Добавить' }}</button>
+                </div>
             </div>
         </div>
     </form>
@@ -217,6 +225,19 @@
 
 @push('scripts')
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Bootstrap validation script
+            const form = document.getElementById('goods-edit-form');
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                }
+                form.classList.add('was-validated');
+            }, true);
+            // Bootstrap validation script
+        });
+
         document.addEventListener("alpine:init", () => {
             Alpine.data("sortableComponent", () => ({
                 init() {

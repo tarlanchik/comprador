@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * Class Good
@@ -67,15 +68,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Goods extends Model
 {
-    use HasFactory, HasLocalizedColumns;
+    use HasFactory, HasLocalizedColumns, HasTranslations;
 
     protected $fillable = [
-        'name_ru', 'name_en', 'name_az',
-        'title_ru', 'title_en', 'title_az',
-        'keywords_ru', 'keywords_en', 'keywords_az',
-        'description_ru', 'description_en', 'description_az',
+        'name', 'title', 'keywords', 'description',
         'price', 'old_price', 'count',
         'youtube_link', 'category_id',
+    ];
+
+    public array $translatable = [
+        'name',
+        'title',
+        'description',
+        'keywords',
     ];
 
     public function category(): BelongsTo

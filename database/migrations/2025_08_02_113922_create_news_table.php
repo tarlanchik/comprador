@@ -10,23 +10,24 @@ return new class extends Migration
     {
         Schema::create('news', function (Blueprint $table) {
             $table->id();
-            $table->string('title_az');
-            $table->text('content_az');
-            $table->string('title_ru');
-            $table->text('content_ru');
-            $table->string('title_en');
-            $table->text('content_en');
-            $table->string('keywords_az')->nullable();
-            $table->string('keywords_ru')->nullable();
-            $table->string('keywords_en')->nullable();
-            $table->text('description_az')->nullable();
-            $table->text('description_ru')->nullable();
-            $table->text('description_en')->nullable();
+
+            // Локализуемые поля
+            $table->json('title');
+            $table->json('content');
+            $table->json('keywords')->nullable();
+            $table->json('description')->nullable();
+
+            // Доп. поля
             $table->string('youtube_link')->nullable();
             $table->unsignedBigInteger('views')->default(0);
-            $table->unsignedBigInteger('category_id')->default(1);
-            $table->foreign('category_id')->references('id')->on('categories')->onDelete('set null');
+
+            // Связь с категориями
+            $table->unsignedBigInteger('category_id')->nullable();
+            $table->foreign('category_id')->references('id')->on('categories')->nullOnDelete();
+
+            // Автор
             $table->foreignId('author_id')->nullable()->default(1)->constrained('users')->nullOnDelete();
+
             $table->timestamps();
             $table->softDeletes();
         });

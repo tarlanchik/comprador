@@ -28,11 +28,11 @@ class EditPage extends Component
         $this->locales = config('app.locales'); // ['az' => 'Azərbaycan', 'ru' => 'Русский', 'en' => 'English']
 
         foreach ($this->locales as $locale => $label) {
-            $this->titles[$locale] = $page->{'title_'.$locale} ?? '';
-            $this->contents[$locale] = $page->{'content_'.$locale} ?? '';
-            $this->seo_titles[$locale] = $page->{'seo_title_'.$locale} ?? '';
-            $this->seo_descriptions[$locale] = $page->{'seo_description_'.$locale} ?? '';
-            $this->seo_keywords[$locale] = $page->{'seo_keywords_'.$locale} ?? '';
+            $this->titles[$locale] = $page->getTranslation('title', $locale) ?? '';
+            $this->contents[$locale] = $page->getTranslation('content', $locale) ?? '';
+            $this->seo_titles[$locale] = $page->getTranslation('seo_title', $locale) ?? '';
+            $this->seo_descriptions[$locale] = $page->getTranslation('seo_description', $locale) ?? '';
+            $this->seo_keywords[$locale] = $page->getTranslation('seo_keywords', $locale) ?? '';
         }
 
         $this->is_active = $page->is_active;
@@ -46,22 +46,22 @@ class EditPage extends Component
         foreach ($this->locales as $locale => $label) {
             $rules["titles.$locale"] = 'nullable|string|max:255';
             $rules["contents.$locale"] = 'nullable|string';
-            $rules["seo_titles.$locale"] = 'nullable|string|max:255';
-            $rules["seo_descriptions.$locale"] = 'nullable|string';
-            $rules["seo_keywords.$locale"] = 'nullable|string';
+            $rules["seo_titles.$locale"] = 'nullable|string|max:60';
+            $rules["seo_descriptions.$locale"] = 'nullable|string|max:160';
+            $rules["seo_keywords.$locale"] = 'nullable|string|max:255';
         }
         $rules['is_active'] = 'boolean';
         $rules['sort_order'] = 'integer|min:0';
 
         $this->validate($rules);
 
-        // Сохраняем динамически
+        // Сохраняем переводы
         foreach ($this->locales as $locale => $label) {
-            $this->page->{'title_'.$locale} = $this->titles[$locale];
-            $this->page->{'content_'.$locale} = $this->contents[$locale];
-            $this->page->{'seo_title_'.$locale} = $this->seo_titles[$locale];
-            $this->page->{'seo_description_'.$locale} = $this->seo_descriptions[$locale];
-            $this->page->{'seo_keywords_'.$locale} = $this->seo_keywords[$locale];
+            $this->page->setTranslation('title', $locale, $this->titles[$locale]);
+            $this->page->setTranslation('content', $locale, $this->contents[$locale]);
+            $this->page->setTranslation('seo_title', $locale, $this->seo_titles[$locale]);
+            $this->page->setTranslation('seo_description', $locale, $this->seo_descriptions[$locale]);
+            $this->page->setTranslation('seo_keywords', $locale, $this->seo_keywords[$locale]);
         }
 
         $this->page->is_active = $this->is_active;
@@ -72,6 +72,7 @@ class EditPage extends Component
         session()->flash('success', 'Страница успешно обновлена!');
         redirect()->route('admin.pages.index');
     }
+
 
     #[Layout('admin.layouts.admin')]
     public function render()

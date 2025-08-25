@@ -13,24 +13,15 @@ return new class extends Migration
     {
         Schema::create('goods', function (Blueprint $table) {
             $table->id();
+
+            // Категория (с каскадным удалением)
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
 
-            // Мультиязычные поля
-            $table->string('name_ru');
-            $table->string('name_en');
-            $table->string('name_az');
-
-            $table->string('title_ru')->nullable();
-            $table->string('title_en')->nullable();
-            $table->string('title_az')->nullable();
-
-            $table->text('description_ru')->nullable();
-            $table->text('description_en')->nullable();
-            $table->text('description_az')->nullable();
-
-            $table->text('keywords_ru')->nullable();
-            $table->text('keywords_en')->nullable();
-            $table->text('keywords_az')->nullable();
+            // Мультиязычные поля (JSON)
+            $table->json('name');
+            $table->json('title')->nullable();
+            $table->json('description')->nullable();
+            $table->json('keywords')->nullable();
 
             // Цены и прочее
             $table->decimal('price', 10, 2);
@@ -38,10 +29,10 @@ return new class extends Migration
             $table->integer('count')->default(0);
 
             $table->string('youtube_link')->nullable();
+
             $table->timestamps();
             $table->softDeletes();
         });
-
     }
 
     /**

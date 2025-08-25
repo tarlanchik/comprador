@@ -21,6 +21,8 @@
             &nbsp;
         </div>
    </div>
+
+    <hr class="border border-primary border-1 opacity-75">
     <div class="card mt-4">
         <div class="card-header"><i class="bi bi-card-checklist"></i> Список товаров</div>
         <div class="card-body table-responsive">
@@ -65,7 +67,7 @@
 
     @else
     <div class="card mt-4">
-        <div class="card-header"><i class="bi bi-exclamation-octagon"></i> Внимание!</div>
+        <div class="card-header">⚡️ Внимание!</div>
         <div class="card-body">
             <div class="alert alert-warning text-center mx-auto" role="alert">
                 Пока нет доступных товаров для отображения.

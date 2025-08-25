@@ -13,27 +13,37 @@ class PageSeeder extends Seeder
             ['slug' => 'about'],
             [
                 // Заголовки
-                'title_az' => 'Haqqımızda',
-                'title_ru' => 'О нас',
-                'title_en' => 'About Us',
+                'title' => [
+                    'az' => 'Haqqımızda',
+                    'ru' => 'О нас',
+                    'en' => 'About Us',
+                ],
 
                 // Контент
-                'content_az' => '<p>Kontent AZ üçün</p>',
-                'content_ru' => '<p>Контент для RU</p>',
-                'content_en' => '<p>Content for EN</p>',
+                'content' => [
+                    'az' => '<p>Kontent AZ üçün</p>',
+                    'ru' => '<p>Контент для RU</p>',
+                    'en' => '<p>Content for EN</p>',
+                ],
 
                 // SEO
-                'seo_title_az' => 'Haqqımızda - Şirkətimiz haqqında',
-                'seo_title_ru' => 'О нас - Информация о компании',
-                'seo_title_en' => 'About Us - Company Information',
+                'seo_title' => [
+                    'az' => 'Haqqımızda - Şirkətimiz haqqında',
+                    'ru' => 'О нас - Информация о компании',
+                    'en' => 'About Us - Company Information',
+                ],
 
-                'seo_description_az' => 'Şirkətimiz və fəaliyyəti haqqında ətraflı məlumat.',
-                'seo_description_ru' => 'Подробная информация о нашей компании и деятельности.',
-                'seo_description_en' => 'Detailed information about our company and activities.',
+                'seo_description' => [
+                    'az' => 'Şirkətimiz və fəaliyyəti haqqında ətraflı məlumat.',
+                    'ru' => 'Подробная информация о нашей компании и деятельности.',
+                    'en' => 'Detailed information about our company and activities.',
+                ],
 
-                'seo_keywords_az' => 'haqqımızda, şirkət, məlumat',
-                'seo_keywords_ru' => 'о нас, компания, информация',
-                'seo_keywords_en' => 'about us, company, information',
+                'seo_keywords' => [
+                    'az' => 'haqqımızda, şirkət, məlumat',
+                    'ru' => 'о нас, компания, информация',
+                    'en' => 'about us, company, information',
+                ],
 
                 'is_active' => true,
                 'sort_order' => 1,
@@ -43,28 +53,35 @@ class PageSeeder extends Seeder
         Page::updateOrCreate(
             ['slug' => 'contact'],
             [
-                // Заголовки
-                'title_az' => 'Əlaqə',
-                'title_ru' => 'Контакты',
-                'title_en' => 'Contact',
+                'title' => [
+                    'az' => 'Əlaqə',
+                    'ru' => 'Контакты',
+                    'en' => 'Contact',
+                ],
 
-                // Контент
-                'content_az' => '<p>Əlaqə məlumatları burada</p>',
-                'content_ru' => '<p>Контактная информация здесь</p>',
-                'content_en' => '<p>Contact information here</p>',
+                'content' => [
+                    'az' => '<p>Əlaqə məlumatları burada</p>',
+                    'ru' => '<p>Контактная информация здесь</p>',
+                    'en' => '<p>Contact information here</p>',
+                ],
 
-                // SEO
-                'seo_title_az' => 'Əlaqə - Bizimlə əlaqə saxlayın',
-                'seo_title_ru' => 'Контакты - Свяжитесь с нами',
-                'seo_title_en' => 'Contact - Get in touch with us',
+                'seo_title' => [
+                    'az' => 'Əlaqə - Bizimlə əlaqə saxlayın',
+                    'ru' => 'Контакты - Свяжитесь с нами',
+                    'en' => 'Contact - Get in touch with us',
+                ],
 
-                'seo_description_az' => 'Bizimlə əlaqə saxlamaq üçün ünvan və telefon məlumatları.',
-                'seo_description_ru' => 'Наш адрес и контактные телефоны для связи.',
-                'seo_description_en' => 'Our address and contact details to reach us.',
+                'seo_description' => [
+                    'az' => 'Bizimlə əlaqə saxlamaq üçün ünvan və telefon məlumatları.',
+                    'ru' => 'Наш адрес и контактные телефоны для связи.',
+                    'en' => 'Our address and contact details to reach us.',
+                ],
 
-                'seo_keywords_az' => 'əlaqə, ünvan, telefon',
-                'seo_keywords_ru' => 'контакты, адрес, телефон',
-                'seo_keywords_en' => 'contact, address, phone',
+                'seo_keywords' => [
+                    'az' => 'əlaqə, ünvan, telefon',
+                    'ru' => 'контакты, адрес, телефон',
+                    'en' => 'contact, address, phone',
+                ],
 
                 'is_active' => true,
                 'sort_order' => 2,

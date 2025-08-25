@@ -90,9 +90,9 @@ class EditNews extends Component
     {
         foreach ($this->locales as $lang => $name) {
             $rules["content_{$lang}"] = [new \App\Rules\TrixContentRequired()];
-            $rules["title_{$lang}"] = 'required';
-            $rules["keywords_{$lang}"] = 'required';
-            $rules["description_{$lang}"] = 'required';
+            $rules["title_{$lang}"] = 'required|string|max:60';
+            $rules["keywords_{$lang}"] = 'required|string|max:255';
+            $rules["description_{$lang}"] = 'required|string|max:160';
         }
 
         $rules['youtube_link'] = 'nullable|url';

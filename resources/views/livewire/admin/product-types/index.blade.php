@@ -1,6 +1,5 @@
 <div class="container py-4">
-    <div>
-        <h2>Управление шаблонами</h2>
+    <h2>Управление шаблонами</h2>
 
         @if (session()->has('error'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -16,46 +15,59 @@
             </div>
         @endif
 
-        <div class="card">
-            <div class="card-header">
-                <h5 class="modal-title">
-                    Типы товаров
-                </h5>
-            </div>
+        <div class="card"><div class="card-header"><h5 class="modal-title">Типы товаров</h5></div>
             <div class="card-body">
-                <form wire:submit.prevent="addType" class="row g-2 align-items-center mb-4">
-                    <div class="col-auto">
-                        <input type="text" wire:model="name" class="form-control" placeholder="Новый тип товара">
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-bag-plus-fill"></i> Добавить</button>
-                    </div>
-                </form>
-                    <ul class="list-group mb-4">
+                <fieldset class="border rounded-3 p-4 shadow-sm bg-light mb-4">
+                    <legend class="float-none w-auto px-3 fw-bold text-primary fs-5">Типы товаров</legend>
+                    <form wire:submit.prevent="addType" class="align-items-center mb-4">
+                        <div class="input-group mb-3">
+                            <input type="text" wire:model="name" class="form-control" placeholder="Введите имя новый тип товара">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-bag-plus-fill"></i> Добавить</button>
+                        </div>
+                    </form>
+                </fieldset>
+                @if(sizeof($types) > 0)
+                <fieldset class="border rounded-3 p-4 shadow-sm bg-light mb-4">
+                    <legend class="float-none w-auto px-3 fw-bold text-primary fs-5">Список типов товаров</legend>
+                    <table class="table table-bordered table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th scope="col">Имена типов товаров</th>
+                            <th scope="col" class="text-end">Управление типами</th>
+                        </tr>
+                        </thead>
+                        <tbody>
                         @foreach($types as $type)
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>📌 {{ $type->name }}</span>
-                                <div class="btn-group">
-                                    <button wire:click="editType({{ $type->id }})" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Редактировать</button>
-                                    <button wire:click="manageParameters({{ $type->id }})" class="btn btn-sm btn-success"><i class="bi bi-caret-down-fill"></i> Параметры</button>
-                                    <button wire:click="deleteType({{ $type->id }})" class="btn btn-sm btn-danger" wire:confirm="Вы уверены, что хотите удалить данный тип ?"><i class="bi bi-trash"></i> Удалить</button>
-                                </div>
-                            </li>
+                            <tr>
+                                <td><span>📌 {{ $type->name }}</span></td>
+                                <td class="text-end">
+                                    <div class="btn-group">
+                                        <button wire:click="editType({{ $type->id }})" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Редактировать</button>
+                                        <button wire:click="manageParameters({{ $type->id }})" class="btn btn-sm btn-success"><i class="bi bi-caret-down-fill"></i> Управление параметрами</button>
+                                        <button wire:click="deleteType({{ $type->id }})" class="btn btn-sm btn-danger" wire:confirm="Вы уверены, что хотите удалить данный тип ?"><i class="bi bi-trash"></i> Удалить</button>
+                                    </div>
+                                </td>
+                            </tr>
                         @endforeach
-                    </ul>
-                </div>
+                        </tbody>
+                    </table>
+                </fieldset>
             </div>
+            <div class="card-footer">&nbsp;</div>
+            @endif
+        </div>
 
         @if($selectedTypeId)
-            <div class="card mt-5">
+        <hr class="border border-primary border-1 opacity-75">
+            <div class="card">
                 <div class="card-header">
                     <h5 class="modal-title">
                         Управление параметрами для типа товара: {{ $selectedTypeName ?? 'Неизвестный тип' }}
                     </h5>
                 </div>
                 <div class="card-body">
-                    <fieldset class="border rounded p-3 mb-4">
-                        <legend class="float-none w-auto px-2"> Добавить новый параметр для типа товара: {{ $selectedTypeName ?? 'Неизвестный тип' }}</legend>
+                    <fieldset class="border rounded-3 p-4 shadow-sm bg-light mb-4">
+                        <legend class="float-none w-auto px-3 fw-bold text-primary fs-5"> Добавить новый параметр для типа товара: {{ $selectedTypeName ?? 'Неизвестный тип' }}</legend>
                         <form wire:submit.prevent="addParameter" class="row g-2 align-items-center mb-3">
                             @foreach($locales as $lang=>$label)
                                 @php $lang = ucfirst($lang) @endphp
@@ -69,25 +81,38 @@
                         </form>
                     </fieldset>
                     @if(count($parameterList) > 0)
-                    <fieldset class="border rounded p-3 mb-4 mt-5">
-                        <legend class="float-none w-auto px-2"> Список параметров для типа товаров: {{ $selectedTypeName ?? 'Неизвестный тип' }}</legend>
-                        <ul class="list-group">
-                            @foreach($parameterList as $param)
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>🔧 {{ $param['name_ru'] }}</span>
-                                    <div class="btn-group">
-                                        <button wire:click="startEditingParameter({{ $param->id }})" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Редактировать</button>
-                                        <button wire:click="deleteParameter({{ $param['id'] }})" class="btn btn-sm btn-danger" wire:confirm="Вы уверены, что хотите удалить данный параметр ?"><i class="bi bi-trash"></i> Удалить</button>
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ul>
+                    <fieldset class="border rounded-3 p-4 shadow-sm bg-light mb-4">
+                            <legend class="float-none w-auto px-3 fw-bold text-primary fs-5"> Список параметров для типа товаров: {{ $selectedTypeName ?? 'Неизвестный тип' }}</legend>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">Имена параметров товара</th>
+                                        <th scope="col" class="text-end">Управление параметрами</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach($parameterList as $param)
+                                        <tr>
+                                            <td>🔑 {{ $param['name_ru'] }}</td>
+                                            <td class="text-end">
+                                                <div class="btn-group">
+                                                <button wire:click="startEditingParameter({{ $param->id }})" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Редактировать</button>
+                                                <button wire:click="deleteParameter({{ $param['id'] }})" class="btn btn-sm btn-danger" wire:confirm="Вы уверены, что хотите удалить данный параметр ?"><i class="bi bi-trash"></i> Удалить</button>
+                                            </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
                     </fieldset>
                     @endif
                 </div>
+                <div class="card-footer">&nbsp;</div>
             </div>
         @endif
-    </div>
+
 
     <!-- Edit Parameter Modal -->
     <div wire:ignore.self class="modal fade" id="editParameterModal" tabindex="-1" aria-labelledby="editParameterModalLabel" aria-hidden="true">
@@ -135,7 +160,6 @@
             </div>
         </div>
     </div>
-</div>
 <script>
     window.addEventListener('open-edit-parameter-modal', () => {
         let modal = new bootstrap.Modal(document.getElementById('editParameterModal'));
@@ -160,10 +184,8 @@
         const modal = bootstrap.Modal.getInstance(modalEl);
         if (modal) {
             modal.hide();
-        }
-    });
-
-
+        }    });
 </script>
+</div>
 
 

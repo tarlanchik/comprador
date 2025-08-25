@@ -6,6 +6,10 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Application;
 use App\Providers\ViewServiceProvider;
 use App\Http\Middleware\SetLocale;
+use Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRedirectFilter;
+use Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRoutes;
+use Mcamara\LaravelLocalization\Middleware\LaravelLocalizationViewPath;
+use Mcamara\LaravelLocalization\Middleware\LocaleSessionRedirect;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withProviders([
@@ -21,6 +25,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Регистрируем alias для SetLocale
         $middleware->alias([
             'set.locale' => SetLocale::class,
+
+            'localize'              => LaravelLocalizationRoutes::class,
+            'localizationRedirect'  => LaravelLocalizationRedirectFilter::class,
+            'localeSessionRedirect' => LocaleSessionRedirect::class,
+            'localeViewPath'        => LaravelLocalizationViewPath::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

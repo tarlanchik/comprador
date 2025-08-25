@@ -11,28 +11,12 @@ return new class extends Migration {
             $table->id();
             $table->string('slug', 191)->unique(); // "about", "contact"
 
-            // Название страницы
-            $table->string('title_az')->nullable();
-            $table->string('title_ru')->nullable();
-            $table->string('title_en')->nullable();
-
-            // Контент
-            $table->longText('content_az')->nullable();
-            $table->longText('content_ru')->nullable();
-            $table->longText('content_en')->nullable();
-
-            // SEO
-            $table->string('seo_title_az')->nullable();
-            $table->string('seo_title_ru')->nullable();
-            $table->string('seo_title_en')->nullable();
-
-            $table->text('seo_description_az')->nullable();
-            $table->text('seo_description_ru')->nullable();
-            $table->text('seo_description_en')->nullable();
-
-            $table->string('seo_keywords_az')->nullable();
-            $table->string('seo_keywords_ru')->nullable();
-            $table->string('seo_keywords_en')->nullable();
+            // Локализуемые поля
+            $table->json('title')->nullable();
+            $table->json('content')->nullable();
+            $table->json('seo_title')->nullable();
+            $table->json('seo_description')->nullable();
+            $table->json('seo_keywords')->nullable();
 
             // Управление страницей
             $table->boolean('is_active')->default(true);
@@ -40,6 +24,7 @@ return new class extends Migration {
 
             $table->timestamps();
         });
+
     }
 
     public function down(): void
